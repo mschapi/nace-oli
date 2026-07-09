@@ -36,9 +36,74 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     button,
     table {
       font: inherit;
+    }
+
+    .app-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      height: 54px;
+      display: flex;
+      justify-content: center;
+      gap: 26px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 245, 239, 0.96);
+      backdrop-filter: blur(14px);
+    }
+
+    .app-tab {
+      position: relative;
+      appearance: none;
+      min-width: 116px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 850;
+    }
+
+    .app-tab::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      left: 0;
+      height: 3px;
+      background: transparent;
+    }
+
+    .app-tab.active {
+      color: var(--ink);
+    }
+
+    .app-tab.active::after {
+      background: var(--coral);
+    }
+
+    .app-tab:focus-visible {
+      outline: 3px solid rgba(212, 93, 71, 0.3);
+      outline-offset: -3px;
     }
 
     .hero {
@@ -501,6 +566,422 @@
       font-weight: 800;
     }
 
+    .contractions-view {
+      min-height: calc(100svh - 54px);
+      background:
+        linear-gradient(180deg, #f7f5ef 0%, #ffffff 46%, #f1f4ef 100%);
+    }
+
+    .contractions-shell {
+      width: min(960px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 48px 0 56px;
+    }
+
+    .contractions-heading {
+      max-width: 680px;
+      margin-bottom: 32px;
+    }
+
+    .contractions-kicker {
+      margin: 0 0 10px;
+      color: var(--coral-dark);
+      font-size: 0.76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .contractions-title {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(2.7rem, 7vw, 5.2rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .contractions-intro {
+      max-width: 48ch;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .contraction-live {
+      display: grid;
+      grid-template-columns: minmax(210px, 0.8fr) minmax(260px, 1.2fr);
+      gap: 42px;
+      align-items: center;
+      padding: 34px 0 42px;
+      border-block: 1px solid var(--line);
+    }
+
+    .contraction-summary {
+      display: grid;
+      gap: 24px;
+    }
+
+    .contraction-stage {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .contraction-timer {
+      min-height: 82px;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(3.2rem, 9vw, 6rem);
+      font-weight: 950;
+      line-height: 0.95;
+    }
+
+    .hour-count {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .hour-count strong {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .hour-count span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 750;
+    }
+
+    .contraction-action {
+      display: grid;
+      justify-items: center;
+      gap: 16px;
+    }
+
+    .contraction-button {
+      position: relative;
+      isolation: isolate;
+      width: 230px;
+      aspect-ratio: 1;
+      padding: 34px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--coral);
+      color: var(--white);
+      cursor: pointer;
+      box-shadow:
+        0 22px 38px rgba(168, 62, 45, 0.28),
+        inset 0 -9px 0 rgba(90, 23, 14, 0.16);
+      font-size: 1.35rem;
+      font-weight: 950;
+      line-height: 1.15;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 180ms ease;
+    }
+
+    .contraction-button::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      z-index: -1;
+      border: 2px solid rgba(212, 93, 71, 0.2);
+      border-radius: 50%;
+    }
+
+    .contraction-button:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 26px 46px rgba(168, 62, 45, 0.32),
+        inset 0 -9px 0 rgba(90, 23, 14, 0.16);
+    }
+
+    .contraction-button:active,
+    .contraction-button.pressed {
+      transform: translateY(5px) scale(0.97);
+      box-shadow:
+        0 8px 18px rgba(23, 33, 27, 0.2),
+        inset 0 -3px 0 rgba(23, 33, 27, 0.16);
+    }
+
+    .contraction-button[data-stage="peak"] {
+      background: var(--gold);
+      box-shadow:
+        0 22px 38px rgba(184, 130, 24, 0.26),
+        inset 0 -9px 0 rgba(90, 62, 10, 0.15);
+    }
+
+    .contraction-button[data-stage="peak"]::before {
+      border-color: rgba(216, 164, 60, 0.3);
+    }
+
+    .contraction-button[data-stage="end"] {
+      background: var(--leaf);
+      box-shadow:
+        0 22px 38px rgba(47, 109, 80, 0.26),
+        inset 0 -9px 0 rgba(15, 60, 38, 0.15);
+    }
+
+    .contraction-button[data-stage="end"]::before {
+      border-color: rgba(47, 109, 80, 0.3);
+    }
+
+    .contraction-button:focus-visible {
+      outline: 4px solid rgba(212, 93, 71, 0.28);
+      outline-offset: 8px;
+    }
+
+    .save-status {
+      min-height: 20px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .contraction-log {
+      padding-top: 38px;
+    }
+
+    .log-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    .log-heading h2 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0;
+    }
+
+    .log-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .contraction-table-wrap {
+      overflow-x: auto;
+      border-block: 1px solid var(--line);
+    }
+
+    .contraction-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .contraction-table th,
+    .contraction-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.84rem;
+    }
+
+    .contraction-table th {
+      color: var(--muted);
+      background: #f1f4ef;
+      font-size: 0.68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .contraction-table th:first-child,
+    .contraction-table td:first-child {
+      width: 56px;
+      text-align: center;
+    }
+
+    .contraction-table th:last-child,
+    .contraction-table td:last-child {
+      width: 74px;
+      text-align: right;
+    }
+
+    .contraction-row {
+      cursor: default;
+    }
+
+    .contraction-row:hover td {
+      background: #fafaf7;
+    }
+
+    .contraction-row.active td {
+      background: #fff5e0;
+    }
+
+    .time-cell {
+      font-variant-numeric: tabular-nums;
+      line-height: 1.35;
+    }
+
+    .time-cell span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .frequency-row td {
+      padding: 7px 12px;
+      color: var(--muted);
+      background: #f8f8f5;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-align: center !important;
+    }
+
+    .edit-contraction {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--leaf);
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 850;
+    }
+
+    .edit-contraction:hover {
+      text-decoration: underline;
+    }
+
+    .empty-log {
+      margin: 0;
+      padding: 34px 0;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .log-actions {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 28px;
+      padding-top: 20px;
+    }
+
+    .log-actions .medical-note {
+      flex: 1;
+      margin: 0;
+    }
+
+    .log-actions .delete-all {
+      flex: 0 0 auto;
+      justify-content: flex-end;
+    }
+
+    .delete-all {
+      appearance: none;
+      padding: 10px 0;
+      border: 0;
+      border-bottom: 1px solid currentColor;
+      background: transparent;
+      color: #9c4032;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 850;
+    }
+
+    .medical-note {
+      max-width: 72ch;
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+
+    .edit-dialog {
+      width: min(440px, calc(100% - 28px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .edit-dialog::backdrop {
+      background: rgba(23, 33, 27, 0.58);
+    }
+
+    .edit-form {
+      padding: 24px;
+    }
+
+    .edit-form h2 {
+      margin: 0 0 20px;
+      font-size: 1.3rem;
+    }
+
+    .edit-fields {
+      display: grid;
+      gap: 14px;
+    }
+
+    .edit-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .edit-field span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .edit-field input {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .edit-error {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: #9c4032;
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .edit-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .edit-actions button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .edit-cancel {
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .edit-save {
+      border-color: var(--leaf) !important;
+      background: var(--leaf);
+      color: #fff;
+    }
+
     @media (max-width: 760px) {
       .hero {
         min-height: 92svh;
@@ -603,6 +1084,41 @@
       .bar span {
         font-size: 0.56rem;
       }
+
+      .contractions-shell {
+        width: min(100% - 28px, 560px);
+        padding: 34px 0 46px;
+      }
+
+      .contraction-live {
+        grid-template-columns: 1fr;
+        gap: 26px;
+        padding-top: 26px;
+      }
+
+      .contraction-summary {
+        justify-items: center;
+        text-align: center;
+      }
+
+      .contraction-button {
+        width: 210px;
+      }
+
+      .log-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .log-actions {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .delete-all {
+        align-self: flex-end;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -623,6 +1139,12 @@
   </style>
 </head>
 <body>
+  <nav class="app-tabs" role="tablist" aria-label="Secciones de la app">
+    <button class="app-tab active" role="tab" type="button" data-view="countdown">¿Será hoy?</button>
+    <button class="app-tab" role="tab" type="button" data-view="contractions">Contracciones</button>
+  </nav>
+
+  <div id="countdownView">
   <header class="hero" aria-labelledby="title">
     <div class="hero-inner">
       <div class="topline">
@@ -738,6 +1260,98 @@
       </div>
     </section>
   </main>
+  </div>
+
+  <section class="contractions-view" id="contractionsView" hidden>
+    <main class="contractions-shell">
+      <header class="contractions-heading">
+        <p class="contractions-kicker">Esperando a Oli</p>
+        <h1 class="contractions-title">Una ola a la vez</h1>
+        <p class="contractions-intro">Cada contracción nos acerca un poquito más a conocerte.</p>
+      </header>
+
+      <section class="contraction-live" aria-label="Registrar una contracción">
+        <div class="contraction-summary">
+          <p class="contraction-stage" id="contractionStage">Lista para registrar</p>
+          <div class="contraction-timer" id="contractionTimer" aria-live="off">00:00.0</div>
+          <div class="hour-count">
+            <strong id="lastHourCount">0</strong>
+            <span>contracciones en la última hora</span>
+          </div>
+        </div>
+        <div class="contraction-action">
+          <button class="contraction-button" id="contractionButton" type="button" data-stage="idle">
+            Inicio contracción
+          </button>
+          <p class="save-status" id="saveStatus" aria-live="polite">Guardado en este dispositivo</p>
+        </div>
+      </section>
+
+      <section class="contraction-log" aria-labelledby="contractionLogTitle">
+        <div class="log-heading">
+          <div>
+            <p class="model-kicker">Registro</p>
+            <h2 id="contractionLogTitle">Historial de contracciones</h2>
+          </div>
+          <p>Horarios de Buenos Aires (GMT-3)</p>
+        </div>
+
+        <p class="empty-log" id="emptyLog">La primera contracción va a aparecer acá.</p>
+
+        <div class="contraction-table-wrap" id="contractionTableWrap" hidden>
+          <table class="contraction-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Inicio</th>
+                <th>Pico</th>
+                <th>Fin</th>
+                <th>Duración</th>
+                <th><span class="sr-only">Editar</span></th>
+              </tr>
+            </thead>
+            <tbody id="contractionRows"></tbody>
+          </table>
+        </div>
+
+        <div class="log-actions">
+          <p class="medical-note">
+            Este registro es orientativo. Para decidir cuándo consultar, sigan las indicaciones de su equipo obstétrico.
+          </p>
+          <button class="delete-all" id="deleteAllContractions" type="button">Borrar todo</button>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <dialog class="edit-dialog" id="editContractionDialog">
+    <form class="edit-form" method="dialog" id="editContractionForm">
+      <div>
+        <p class="model-kicker">Corregir registro</p>
+        <h2>Editar contracción</h2>
+      </div>
+      <input type="hidden" id="editContractionId">
+      <div class="edit-fields">
+      <label class="edit-field">
+        <span>Inicio</span>
+        <input id="editStart" type="datetime-local" step="1" required>
+      </label>
+      <label class="edit-field">
+        <span>Pico</span>
+        <input id="editPeak" type="datetime-local" step="1">
+      </label>
+      <label class="edit-field">
+        <span>Fin</span>
+        <input id="editEnd" type="datetime-local" step="1">
+      </label>
+      </div>
+      <p class="edit-error" id="editError" role="alert"></p>
+      <div class="edit-actions">
+        <button class="edit-cancel" value="cancel" type="button" id="cancelEdit">Cancelar</button>
+        <button class="edit-save" value="default" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
     const START_DATE = new Date(2026, 6, 5);
@@ -748,6 +1362,14 @@
     const MODEL_SIGMA = 0.48824343974138;
     const CLOSE_RAMP_WEIGHTS = [1, 2, 3, 4, 5, 6, 7].map((weight) => weight / 28);
     const STORAGE_PREFIX = "nace-oli:v2:";
+    const CONTRACTION_STORAGE_KEY = "nace-oli:contractions:v1";
+    const DEVICE_STORAGE_KEY = "nace-oli:device-id:v1";
+    const CONTRACTION_BACKUP_URL = "https://script.google.com/macros/s/AKfycbz0tx1eFPYBk77c8wMWbDCNGMvtVD9ZIY57WyrXGj7x3Vx0JS9ywATGTzKaP8JxBStC/exec?key=bcedae6e6385483ebc8fe1ee1dac53e8";
+    const IS_TEST_MODE = new URLSearchParams(window.location.search).has("test");
+    const ACTIVE_CONTRACTION_STORAGE_KEY = IS_TEST_MODE
+      ? `${CONTRACTION_STORAGE_KEY}:test`
+      : CONTRACTION_STORAGE_KEY;
+    const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
       "No, Oli pidió cinco minutitos más",
@@ -775,6 +1397,22 @@
       weekday: "short",
       day: "2-digit",
       month: "2-digit"
+    });
+
+    const contractionDate = new Intl.DateTimeFormat("es-AR", {
+      timeZone: BUENOS_AIRES_TIME_ZONE,
+      weekday: "short",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    const contractionTime = new Intl.DateTimeFormat("es-AR", {
+      timeZone: BUENOS_AIRES_TIME_ZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
     });
 
     function erf(x) {
@@ -1076,6 +1714,363 @@
       button.textContent = "Preguntar otra vez";
     });
 
+    function makeId() {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+      return `oli-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadContractions() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(ACTIVE_CONTRACTION_STORAGE_KEY) || "[]");
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter((item) => item && Number.isFinite(item.start))
+          .map((item) => ({
+            id: item.id || makeId(),
+            number: Number(item.number) || 0,
+            start: Number(item.start),
+            peak: Number.isFinite(item.peak) ? Number(item.peak) : null,
+            end: Number.isFinite(item.end) ? Number(item.end) : null
+          }))
+          .sort((a, b) => a.start - b.start);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveContractions() {
+      contractions.sort((a, b) => a.start - b.start);
+      contractions.forEach((item, index) => {
+        item.number = index + 1;
+      });
+      localStorage.setItem(ACTIVE_CONTRACTION_STORAGE_KEY, JSON.stringify(contractions));
+    }
+
+    function getDeviceId() {
+      if (IS_TEST_MODE) return "test-mode";
+      let deviceId = localStorage.getItem(DEVICE_STORAGE_KEY);
+      if (!deviceId) {
+        deviceId = makeId();
+        localStorage.setItem(DEVICE_STORAGE_KEY, deviceId);
+      }
+      return deviceId;
+    }
+
+    function frequencyBefore(record) {
+      const index = contractions.findIndex((item) => item.id === record.id);
+      if (index <= 0) return null;
+      return Math.round((record.start - contractions[index - 1].start) / 1000);
+    }
+
+    async function backUpContraction(action, record = null, extra = {}) {
+      const status = document.getElementById("saveStatus");
+      if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
+        status.textContent = IS_TEST_MODE
+          ? "Modo de prueba · guardado solo en este dispositivo"
+          : "Guardado en este dispositivo";
+        return;
+      }
+
+      const payload = {
+        action,
+        deviceId: getDeviceId(),
+        sentAt: new Date().toISOString(),
+        record,
+        frequencySeconds: record ? frequencyBefore(record) : null,
+        ...extra
+      };
+
+      status.textContent = "Guardado acá · enviando copia a Drive…";
+      try {
+        await fetch(CONTRACTION_BACKUP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+        status.textContent = "Guardado acá · copia enviada a Drive";
+      } catch {
+        status.textContent = "Guardado acá · Drive se sincronizará al próximo cambio";
+      }
+    }
+
+    function activeContraction() {
+      return contractions.find((item) => item.end === null) || null;
+    }
+
+    function formatElapsed(milliseconds) {
+      const safeMilliseconds = Math.max(0, milliseconds);
+      const minutes = Math.floor(safeMilliseconds / 60000);
+      const seconds = Math.floor((safeMilliseconds % 60000) / 1000);
+      const tenths = Math.floor((safeMilliseconds % 1000) / 100);
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${tenths}`;
+    }
+
+    function formatDuration(milliseconds) {
+      if (!Number.isFinite(milliseconds)) return "En curso";
+      const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return minutes > 0 ? `${minutes} min ${seconds} s` : `${seconds} s`;
+    }
+
+    function formatFrequency(seconds) {
+      if (!Number.isFinite(seconds)) return "";
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.abs(seconds % 60);
+      return minutes > 0
+        ? `${minutes} min ${remainingSeconds} s entre inicios`
+        : `${seconds} s entre inicios`;
+    }
+
+    function timeCell(timestamp) {
+      if (!Number.isFinite(timestamp)) return "—";
+      const date = new Date(timestamp);
+      return `${contractionTime.format(date)}<span>${contractionDate.format(date).replace(".", "")}</span>`;
+    }
+
+    function updateLastHourCount() {
+      const oneHourAgo = Date.now() - 3600000;
+      const count = contractions.filter((item) => item.start >= oneHourAgo).length;
+      document.getElementById("lastHourCount").textContent = String(count);
+    }
+
+    function renderContractionButton() {
+      const current = activeContraction();
+      const button = document.getElementById("contractionButton");
+      const stage = document.getElementById("contractionStage");
+
+      if (!current) {
+        button.dataset.stage = "idle";
+        button.textContent = "Inicio contracción";
+        stage.textContent = "Lista para registrar";
+        document.getElementById("contractionTimer").textContent = "00:00.0";
+      } else if (current.peak === null) {
+        button.dataset.stage = "peak";
+        button.textContent = "Pico de contracción";
+        stage.textContent = `Contracción ${current.number} en curso`;
+      } else {
+        button.dataset.stage = "end";
+        button.textContent = "Fin de contracción";
+        stage.textContent = `Pico marcado · contracción ${current.number}`;
+      }
+    }
+
+    function renderContractionRows() {
+      const rows = document.getElementById("contractionRows");
+      const empty = document.getElementById("emptyLog");
+      const tableWrap = document.getElementById("contractionTableWrap");
+      rows.innerHTML = "";
+      empty.hidden = contractions.length > 0;
+      tableWrap.hidden = contractions.length === 0;
+
+      contractions.forEach((record, index) => {
+        if (index > 0) {
+          const frequency = Math.round((record.start - contractions[index - 1].start) / 1000);
+          const frequencyRow = document.createElement("tr");
+          frequencyRow.className = "frequency-row";
+          frequencyRow.innerHTML = `<td colspan="6">↕ ${formatFrequency(frequency)}</td>`;
+          rows.appendChild(frequencyRow);
+        }
+
+        const row = document.createElement("tr");
+        row.className = "contraction-row";
+        if (record.end === null) row.classList.add("active");
+        row.dataset.contractionId = record.id;
+        row.title = "Doble clic para editar";
+        row.innerHTML = `
+          <td><strong>${record.number}</strong></td>
+          <td class="time-cell">${timeCell(record.start)}</td>
+          <td class="time-cell">${timeCell(record.peak)}</td>
+          <td class="time-cell">${timeCell(record.end)}</td>
+          <td>${formatDuration(record.end === null ? null : record.end - record.start)}</td>
+          <td><button class="edit-contraction" type="button" data-edit-id="${record.id}">Editar</button></td>
+        `;
+        rows.appendChild(row);
+      });
+    }
+
+    function renderContractions() {
+      saveContractions();
+      renderContractionButton();
+      renderContractionRows();
+      updateLastHourCount();
+    }
+
+    function pulseContractionButton() {
+      const button = document.getElementById("contractionButton");
+      button.classList.add("pressed");
+      window.setTimeout(() => button.classList.remove("pressed"), 150);
+    }
+
+    function handleContractionAction() {
+      pulseContractionButton();
+      const now = Date.now();
+      const current = activeContraction();
+      let action;
+      let changedRecord;
+
+      if (!current) {
+        changedRecord = {
+          id: makeId(),
+          number: contractions.length + 1,
+          start: now,
+          peak: null,
+          end: null
+        };
+        contractions.push(changedRecord);
+        action = "inicio";
+      } else if (current.peak === null) {
+        current.peak = now;
+        changedRecord = current;
+        action = "pico";
+      } else {
+        current.end = now;
+        changedRecord = current;
+        action = "fin";
+      }
+
+      renderContractions();
+      backUpContraction(action, { ...changedRecord });
+    }
+
+    function toBuenosAiresInput(timestamp) {
+      if (!Number.isFinite(timestamp)) return "";
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: BUENOS_AIRES_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(new Date(timestamp));
+      const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+      return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}`;
+    }
+
+    function fromBuenosAiresInput(value) {
+      if (!value) return null;
+      const timestamp = new Date(`${value}-03:00`).getTime();
+      return Number.isFinite(timestamp) ? timestamp : null;
+    }
+
+    function openContractionEditor(id) {
+      const record = contractions.find((item) => item.id === id);
+      if (!record) return;
+      document.getElementById("editContractionId").value = record.id;
+      document.getElementById("editStart").value = toBuenosAiresInput(record.start);
+      document.getElementById("editPeak").value = toBuenosAiresInput(record.peak);
+      document.getElementById("editEnd").value = toBuenosAiresInput(record.end);
+      document.getElementById("editError").textContent = "";
+      document.getElementById("editContractionDialog").showModal();
+    }
+
+    function saveEditedContraction(event) {
+      event.preventDefault();
+      const id = document.getElementById("editContractionId").value;
+      const record = contractions.find((item) => item.id === id);
+      if (!record) return;
+
+      const start = fromBuenosAiresInput(document.getElementById("editStart").value);
+      const peak = fromBuenosAiresInput(document.getElementById("editPeak").value);
+      const end = fromBuenosAiresInput(document.getElementById("editEnd").value);
+      const error = document.getElementById("editError");
+
+      if (!Number.isFinite(start)) {
+        error.textContent = "El inicio es obligatorio.";
+        return;
+      }
+      if (peak !== null && peak < start) {
+        error.textContent = "El pico no puede ser anterior al inicio.";
+        return;
+      }
+      if (end !== null && end < start) {
+        error.textContent = "El fin no puede ser anterior al inicio.";
+        return;
+      }
+      if (peak !== null && end !== null && end < peak) {
+        error.textContent = "El fin no puede ser anterior al pico.";
+        return;
+      }
+      if (end === null && contractions.some((item) => item.id !== id && item.end === null)) {
+        error.textContent = "Ya hay otra contracción en curso. Completala antes de dejar esta abierta.";
+        return;
+      }
+
+      record.start = start;
+      record.peak = peak;
+      record.end = end;
+      renderContractions();
+      document.getElementById("editContractionDialog").close();
+      backUpContraction("edición", { ...record });
+    }
+
+    let contractions = loadContractions();
+
+    document.getElementById("contractionButton").addEventListener("click", handleContractionAction);
+
+    document.getElementById("contractionRows").addEventListener("dblclick", (event) => {
+      const row = event.target.closest(".contraction-row");
+      if (row) openContractionEditor(row.dataset.contractionId);
+    });
+
+    document.getElementById("contractionRows").addEventListener("click", (event) => {
+      const editButton = event.target.closest("[data-edit-id]");
+      if (editButton) openContractionEditor(editButton.dataset.editId);
+    });
+
+    document.getElementById("editContractionForm").addEventListener("submit", saveEditedContraction);
+    document.getElementById("cancelEdit").addEventListener("click", () => {
+      document.getElementById("editContractionDialog").close();
+    });
+
+    document.getElementById("deleteAllContractions").addEventListener("click", () => {
+      if (contractions.length === 0) return;
+      const confirmed = window.confirm("¿Borrar todo el historial de contracciones de este dispositivo?");
+      if (!confirmed) return;
+      const deletedRecords = contractions.map((record) => ({ ...record }));
+      contractions = [];
+      renderContractions();
+      backUpContraction("borrar todo", null, { deletedRecords });
+    });
+
+    function showAppView(view) {
+      const showContractions = view === "contractions";
+      document.getElementById("countdownView").hidden = showContractions;
+      document.getElementById("contractionsView").hidden = !showContractions;
+      document.querySelectorAll(".app-tab").forEach((tab) => {
+        const selected = tab.dataset.view === view;
+        tab.classList.toggle("active", selected);
+        tab.setAttribute("aria-selected", String(selected));
+      });
+      if (showContractions) renderContractions();
+    }
+
+    document.querySelectorAll(".app-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const view = tab.dataset.view;
+        history.replaceState(null, "", view === "contractions" ? "#contracciones" : location.pathname + location.search);
+        showAppView(view);
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      showAppView(location.hash === "#contracciones" ? "contractions" : "countdown");
+    });
+
+    setInterval(() => {
+      const current = activeContraction();
+      if (current) {
+        document.getElementById("contractionTimer").textContent = formatElapsed(Date.now() - current.start);
+      }
+      updateLastHourCount();
+    }, 100);
+
     let renderedDay = dayKey(new Date());
     setInterval(() => {
       const currentDay = dayKey(new Date());
@@ -1096,6 +2091,8 @@
     });
 
     renderToday();
+    renderContractions();
+    showAppView(location.hash === "#contracciones" ? "contractions" : "countdown");
   </script>
 </body>
 </html>
