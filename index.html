@@ -653,9 +653,9 @@
     <div class="section-heading">
       <h2>La espera, día por día</h2>
       <p>
-        La curva combina la distribución histórica con una rampa de cierre en los últimos cuatro días.
-        El oráculo guarda su respuesta en este navegador: si vuelven el mismo día, recuerda lo que dijo.
-        A medianoche se habilita una nueva pregunta.
+        La curva combina la distribución histórica con una rampa de cierre durante los últimos siete días.
+        La primera respuesta queda guardada en este navegador. Pueden volver a preguntar, pero el oráculo no cambia
+        el resultado hasta el día siguiente.
       </p>
     </div>
 
@@ -693,7 +693,7 @@
       </div>
       <p class="note">
         Estima fecha de nacimiento, no vía de parto. Es un modelo lúdico, no médico: distribución sesgada con mediana en 40+0 y pico cerca de 40+5.
-        La cola posterior al 22/7 se reparte progresivamente entre los últimos cuatro días y alcanza 100% acumulado en 41+0.
+        La cola posterior al 22/7 se reparte progresivamente durante la última semana y alcanza 100% acumulado en 41+0.
         Fuentes:
         <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3777570/" target="_blank" rel="noreferrer">Jukic et al.</a>
         y <a href="https://datayze.com/labor-probability-chart" target="_blank" rel="noreferrer">Datayze</a>.
@@ -723,8 +723,8 @@
         <article class="model-item">
           <h4>3. Plan de cierre</h4>
           <p>
-            La probabilidad que naturalmente quedaría después de 41+0 se reparte sobre 40+4, 40+5, 40+6 y 41+0
-            con pesos de 10%, 20%, 30% y 40%, para alcanzar 100% sin amontonar toda la cola en la fecha final.
+            La probabilidad que naturalmente quedaría después de 41+0 se reparte desde 40+1 hasta 41+0
+            con una rampa lineal creciente. Así alcanza 100% sin amontonar la cola en solo cuatro fechas.
           </p>
         </article>
         <article class="model-item">
@@ -746,7 +746,7 @@
     const MODEL_A = 303.5740000000058;
     const MODEL_MU = Math.log(23.574000000005825);
     const MODEL_SIGMA = 0.48824343974138;
-    const CLOSE_RAMP_WEIGHTS = [0.10, 0.20, 0.30, 0.40];
+    const CLOSE_RAMP_WEIGHTS = [1, 2, 3, 4, 5, 6, 7].map((weight) => weight / 28);
     const STORAGE_PREFIX = "nace-oli:v2:";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
@@ -754,6 +754,13 @@
       "No, sigue preparando la gran entrada",
       "No, hoy toca seguir haciendo pancita",
       "No, todavía está muy cómodo ahí"
+    ];
+    const REPEAT_NO_MESSAGES = [
+      "Ya preguntaste hoy. Tené paciencia",
+      "El oráculo no cambia de opinión por insistencia",
+      "Sigue siendo no. Oli maneja sus propios tiempos",
+      "Recalculando... mentira. Todavía no",
+      "La respuesta sigue guardada: toca esperar"
     ];
     const CONFETTI_COLORS = ["#f25f5c", "#ffe066", "#70c1b3", "#247ba0", "#ffffff", "#f7a072"];
     let hasCelebrated = false;
@@ -924,10 +931,12 @@
       return NO_MESSAGES[hash % NO_MESSAGES.length];
     }
 
-    function launchConfetti() {
-      if (hasCelebrated || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    function launchConfetti(force = false) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (hasCelebrated && !force) return;
       hasCelebrated = true;
 
+      if (force) document.querySelectorAll(".confetti").forEach((layer) => layer.remove());
       const layer = document.createElement("div");
       layer.className = "confetti";
       layer.setAttribute("aria-hidden", "true");
@@ -950,7 +959,7 @@
       window.setTimeout(() => layer.remove(), 5200);
     }
 
-    function setAnswer(state, meta, noMessage = "No, pero sigue creciendo") {
+    function setAnswer(state, meta, noMessage = "No, pero sigue creciendo", forceCelebration = false) {
       const box = document.getElementById("answerBox");
       const word = document.getElementById("answerWord");
       const small = document.getElementById("answerMeta");
@@ -961,7 +970,7 @@
       } else if (state) {
         word.textContent = "¡Sí!";
         box.classList.add("yes");
-        launchConfetti();
+        launchConfetti(forceCelebration);
       } else {
         word.textContent = noMessage;
         box.classList.add("no");
@@ -1003,15 +1012,13 @@
       if (saved) {
         setAnswer(
           saved.yes,
-          "El oráculo de Oli ya habló hoy · mañana hay otra pregunta",
+          "La primera respuesta de hoy sigue guardada",
           saved.message || noMessageForDate(today)
         );
-        button.disabled = true;
-        button.textContent = "El oráculo ya habló hoy";
+        button.textContent = "Preguntar otra vez";
       } else if (after) {
         setAnswer(true, "La fecha de cierre ya llegó");
-        button.disabled = true;
-        button.textContent = "Oli ya debería estar acá";
+        button.textContent = "Preguntar por Oli";
       } else if (before) {
         setAnswer(null, "La ventana comienza el 5 de julio");
         button.disabled = true;
@@ -1028,11 +1035,24 @@
       const saved = readSavedDraw(key);
 
       if (saved) {
-        setAnswer(
-          saved.yes,
-          "El oráculo de Oli ya habló hoy · mañana hay otra pregunta",
-          saved.message || noMessageForDate(today)
-        );
+        if (saved.yes) {
+          setAnswer(
+            true,
+            "La primera respuesta sigue guardada · sí sigue siendo sí",
+            undefined,
+            true
+          );
+        } else {
+          const repeatMessage = REPEAT_NO_MESSAGES[
+            Math.floor(Math.random() * REPEAT_NO_MESSAGES.length)
+          ];
+          setAnswer(
+            false,
+            "La respuesta original sigue guardada · no hubo un nuevo sorteo",
+            repeatMessage
+          );
+        }
+        document.getElementById("drawButton").textContent = "Preguntar otra vez";
         return;
       }
 
@@ -1053,8 +1073,7 @@
       );
 
       const button = document.getElementById("drawButton");
-      button.disabled = true;
-      button.textContent = "El oráculo ya habló hoy";
+      button.textContent = "Preguntar otra vez";
     });
 
     let renderedDay = dayKey(new Date());
