@@ -1168,7 +1168,7 @@
       aspect-ratio: 4 / 5;
       border-radius: 6px;
       background: #ecefe9;
-      object-fit: cover;
+      object-fit: contain;
     }
 
     .birth-output video.birth-preview {
@@ -2418,6 +2418,30 @@
       });
     }
 
+    function drawCenteredWrappedText(ctx, text, centerX, y, maxWidth, lineHeight, maxLines = 2) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+
+      for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth) {
+          current = test;
+        } else {
+          lines.push(current);
+          current = word;
+        }
+      }
+      if (current) lines.push(current);
+
+      ctx.save();
+      ctx.textAlign = "center";
+      lines.slice(0, maxLines).forEach((line, index) => {
+        ctx.fillText(line, centerX, y + index * lineHeight);
+      });
+      ctx.restore();
+    }
+
     function makeBirthFrameCanvas(photo, birthTimestamp) {
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
@@ -2472,9 +2496,17 @@
       ctx.font = "850 38px Inter, system-ui, sans-serif";
       ctx.fillText(`${birthDateLong(birthTimestamp)} · ${birthTimeLabel(birthTimestamp)}`, 108, 1190);
 
-      ctx.fillStyle = "#667169";
-      ctx.font = "700 34px Inter, system-ui, sans-serif";
-      wrapCanvasText(ctx, "Llegaste y el mundo se volvió un lugar más casa.", 108, 1254, 720, 42, 2);
+      ctx.save();
+      roundedRect(ctx, 136, 1204, 808, 92, 30);
+      ctx.fillStyle = "#f6efe1";
+      ctx.fill();
+      ctx.strokeStyle = "#eadfcf";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.fillStyle = "#17211b";
+      ctx.font = "900 42px Inter, system-ui, sans-serif";
+      drawCenteredWrappedText(ctx, "Bienvenida! Que seas muy feliz!", 540, 1262, 740, 48, 2);
+      ctx.restore();
 
       return canvas;
     }
@@ -2516,7 +2548,7 @@
       ctx.fillRect(x + cell * 2, y + cell * 2, cell * 3, cell * 3);
     }
 
-    function drawPseudoQr(ctx, x, y, size, seed) {
+    function drawPseudoQr(ctx, x, y, size, seed, withLogo = false) {
       const modules = 25;
       const cell = size / modules;
       ctx.fillStyle = "#fff";
@@ -2537,6 +2569,22 @@
             ctx.fillRect(x + col * cell, y + row * cell, Math.ceil(cell), Math.ceil(cell));
           }
         }
+      }
+
+      if (withLogo) {
+        const logoWidth = size * 0.28;
+        const logoHeight = size * 0.34;
+        const logoX = x + (size - logoWidth) / 2;
+        const logoY = y + (size - logoHeight) / 2;
+        ctx.save();
+        roundedRect(ctx, logoX - 12, logoY - 12, logoWidth + 24, logoHeight + 24, 16);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = "#20345e";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+        drawOliShield(ctx, logoX, logoY, logoWidth, logoHeight);
       }
     }
 
@@ -2569,43 +2617,43 @@
       }
       ctx.globalAlpha = 1;
 
-      drawOliShield(ctx, 88, 90, 132, 158);
+      drawOliShield(ctx, 82, 76, 142, 170);
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(556, 160, 108, 0, Math.PI * 2);
+      ctx.arc(556, 178, 148, 0, Math.PI * 2);
       ctx.clip();
-      drawImageCover(ctx, photo, 448, 52, 216, 216);
+      drawImageCover(ctx, photo, 408, 30, 296, 296);
       ctx.restore();
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 9;
       ctx.strokeStyle = "#ffffff";
       ctx.beginPath();
-      ctx.arc(556, 160, 108, 0, Math.PI * 2);
+      ctx.arc(556, 178, 148, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "750 24px Inter, system-ui, sans-serif";
-      ctx.fillText("Socia:", 88, 354);
+      ctx.font = "760 25px Inter, system-ui, sans-serif";
+      ctx.fillText("Futura socia:", 88, 374);
       ctx.font = "950 70px Inter, system-ui, sans-serif";
-      ctx.fillText("00001", 88, 428);
+      ctx.fillText("00001", 88, 448);
 
       ctx.font = "950 34px Inter, system-ui, sans-serif";
-      ctx.fillText("OLIVIA SCHAPIRO", 88, 528);
+      ctx.fillText("OLIVIA SCHAPIRO", 88, 548);
       ctx.font = "760 31px Inter, system-ui, sans-serif";
-      ctx.fillText(`DNI ${birthDateShort(birthTimestamp)}`, 88, 570);
-      ctx.fillText(`NACIMIENTO ${birthTimeLabel(birthTimestamp)}`, 88, 612);
+      ctx.fillText(`FECHA ${birthDateShort(birthTimestamp)}`, 88, 592);
+      ctx.fillText(`HORA ${birthTimeLabel(birthTimestamp)}`, 88, 634);
 
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(88, 652);
-      ctx.lineTo(680, 652);
+      ctx.moveTo(88, 676);
+      ctx.lineTo(680, 676);
       ctx.stroke();
 
       ctx.font = "760 26px Inter, system-ui, sans-serif";
-      ctx.fillText("ACTIVA", 88, 710);
+      ctx.fillText("ACTIVA", 88, 728);
 
-      drawPseudoQr(ctx, 246, 748, 276, seedFromText(`Olivia Schapiro ${birthTimestamp}`));
+      drawPseudoQr(ctx, 254, 718, 260, seedFromText(`Olivia Schapiro ${birthTimestamp}`), true);
 
       ctx.fillStyle = "#f4b51e";
       ctx.fillRect(0, 998, canvas.width, 182);
