@@ -2813,6 +2813,92 @@
       ctx.restore();
     }
 
+    function videoRandom(index, salt = 0) {
+      const value = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+      return value - Math.floor(value);
+    }
+
+    function drawVideoBalloon(ctx, x, y, radius, color, tilt) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(tilt);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "rgba(23, 33, 27, 0.24)";
+      ctx.lineWidth = Math.max(2, radius * 0.06);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius * 0.82, radius * 1.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.36)";
+      ctx.beginPath();
+      ctx.ellipse(-radius * 0.28, -radius * 0.36, radius * 0.16, radius * 0.28, -0.42, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(-radius * 0.16, radius * 0.94);
+      ctx.lineTo(radius * 0.16, radius * 0.94);
+      ctx.lineTo(0, radius * 1.2);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(23, 33, 27, 0.28)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, radius * 1.2);
+      ctx.bezierCurveTo(radius * 0.22, radius * 1.78, -radius * 0.24, radius * 2.2, radius * 0.08, radius * 2.78);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawVideoBalloons(ctx, elapsed) {
+      const width = ctx.canvas.width;
+      const height = ctx.canvas.height;
+      const time = elapsed / 1000;
+      const colors = ["#25348a", "#f4b51e", "#3150b7", "#ffd45a"];
+
+      for (let index = 0; index < 9; index += 1) {
+        const radius = 34 + videoRandom(index, 1) * 24;
+        const loopHeight = height + 360;
+        const speed = 54 + videoRandom(index, 2) * 42;
+        const y = (videoRandom(index, 3) * loopHeight + time * speed) % loopHeight - 180;
+        const x = videoRandom(index, 4) * width + Math.sin(time * 0.9 + videoRandom(index, 5) * Math.PI * 2) * 28;
+        const tilt = Math.sin(time * 0.8 + index) * 0.12;
+
+        ctx.save();
+        ctx.globalAlpha = 0.78;
+        drawVideoBalloon(ctx, x, y, radius, colors[index % colors.length], tilt);
+        ctx.restore();
+      }
+    }
+
+    function drawVideoConfetti(ctx, elapsed) {
+      const width = ctx.canvas.width;
+      const height = ctx.canvas.height;
+      const time = elapsed / 1000;
+      const colors = ["#25348a", "#f4b51e", "#3150b7", "#ffd45a", "#ffffff"];
+
+      for (let index = 0; index < 96; index += 1) {
+        const loopHeight = height + 260;
+        const speed = 128 + videoRandom(index, 1) * 210;
+        const y = (videoRandom(index, 2) * loopHeight + time * speed) % loopHeight - 140;
+        const x = videoRandom(index, 3) * width + Math.sin(time * 1.7 + videoRandom(index, 4) * Math.PI * 2) * (16 + videoRandom(index, 5) * 36);
+        const pieceWidth = 5 + videoRandom(index, 6) * 8;
+        const pieceHeight = 10 + videoRandom(index, 7) * 16;
+        const rotation = time * (1.8 + videoRandom(index, 8) * 5.2) + videoRandom(index, 9) * Math.PI * 2;
+
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.globalAlpha = 0.48 + videoRandom(index, 10) * 0.42;
+        ctx.fillStyle = colors[index % colors.length];
+        roundedRect(ctx, -pieceWidth / 2, -pieceHeight / 2, pieceWidth, pieceHeight, 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     function drawBirthVideoFrame(ctx, frameCanvas, cardCanvas, birthTimestamp, elapsed) {
       const width = ctx.canvas.width;
       const height = ctx.canvas.height;
@@ -2832,6 +2918,8 @@
       ctx.beginPath();
       ctx.arc(640 - progress * 80, 1010, 180, 0, Math.PI * 2);
       ctx.fill();
+
+      drawVideoBalloons(ctx, elapsed);
 
       const crossfadeStart = 1850;
       const crossfadeEnd = 2700;
@@ -2855,6 +2943,8 @@
         drawVideoCard(ctx, frameCanvas, 54, 138, 296, 430, finalProgress, 1);
         drawVideoCard(ctx, cardCanvas, 370, 138, 296, 430, finalProgress, 1);
       }
+
+      drawVideoConfetti(ctx, elapsed);
 
       ctx.textAlign = "center";
       ctx.fillStyle = "#17211b";
