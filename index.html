@@ -889,6 +889,41 @@
       font-weight: 850;
     }
 
+    .born-button {
+      position: fixed;
+      right: max(18px, env(safe-area-inset-right));
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 40;
+      min-height: 52px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 16px 34px rgba(23, 33, 27, 0.28);
+      font-size: 0.96rem;
+      font-weight: 950;
+      letter-spacing: 0;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 160ms ease;
+    }
+
+    .born-button:hover {
+      transform: translateY(-2px);
+      background: var(--leaf);
+      box-shadow: 0 20px 40px rgba(47, 109, 80, 0.28);
+    }
+
+    .born-button:active {
+      transform: translateY(3px) scale(0.98);
+      box-shadow: 0 8px 18px rgba(23, 33, 27, 0.24);
+    }
+
+    .born-button:focus-visible {
+      outline: 4px solid rgba(47, 109, 80, 0.25);
+      outline-offset: 5px;
+    }
+
     .medical-note {
       max-width: 72ch;
       margin: 30px 0 0;
@@ -980,6 +1015,175 @@
       border-color: var(--leaf) !important;
       background: var(--leaf);
       color: #fff;
+    }
+
+    .birth-dialog {
+      width: min(940px, calc(100% - 28px));
+      max-height: calc(100svh - 28px);
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    .birth-dialog::backdrop {
+      background: rgba(23, 33, 27, 0.62);
+    }
+
+    .birth-panel {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.82fr) minmax(320px, 1.18fr);
+      gap: 30px;
+      padding: 26px;
+    }
+
+    .birth-copy h2 {
+      max-width: 10ch;
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 4.2rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .birth-copy p:last-child {
+      margin: 16px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .birth-form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .birth-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .birth-fields .edit-field:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .birth-file {
+      min-height: 112px;
+      padding: 14px;
+      border: 1px dashed #b8c0b8;
+      border-radius: 8px;
+      background: #fafaf7;
+    }
+
+    .birth-file input {
+      min-height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 0.82rem;
+    }
+
+    .birth-hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+
+    .birth-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .birth-actions button,
+    .birth-output-actions button {
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .birth-close,
+    .birth-output-actions .download-asset {
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .birth-create,
+    .birth-output-actions .share-asset {
+      border-color: var(--leaf) !important;
+      background: var(--leaf);
+      color: #fff;
+    }
+
+    .birth-create[disabled] {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .birth-status {
+      min-height: 20px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .birth-status.error {
+      color: #9c4032;
+    }
+
+    .birth-outputs {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding-top: 2px;
+    }
+
+    .birth-output {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fafaf7;
+    }
+
+    .birth-output h3 {
+      margin: 0;
+      font-size: 0.94rem;
+      letter-spacing: 0;
+    }
+
+    .birth-preview {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      border-radius: 6px;
+      background: #ecefe9;
+      object-fit: cover;
+    }
+
+    .birth-output video.birth-preview {
+      background: #18241d;
+    }
+
+    .birth-output-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .birth-output-actions button[disabled] {
+      cursor: not-allowed;
+      opacity: 0.48;
     }
 
     @media (max-width: 760px) {
@@ -1118,6 +1322,36 @@
 
       .delete-all {
         align-self: flex-end;
+      }
+
+      .born-button {
+        right: max(14px, env(safe-area-inset-right));
+        bottom: max(14px, env(safe-area-inset-bottom));
+        min-height: 48px;
+        padding: 0 18px;
+      }
+
+      .birth-panel {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 20px;
+      }
+
+      .birth-copy h2 {
+        max-width: 11ch;
+      }
+
+      .birth-fields,
+      .birth-outputs {
+        grid-template-columns: 1fr;
+      }
+
+      .birth-actions {
+        justify-content: stretch;
+      }
+
+      .birth-actions button {
+        flex: 1 1 140px;
       }
     }
 
@@ -1322,6 +1556,7 @@
         </div>
       </section>
     </main>
+    <button class="born-button" id="bornButton" type="button">Nació</button>
   </section>
 
   <dialog class="edit-dialog" id="editContractionDialog">
@@ -1351,6 +1586,71 @@
         <button class="edit-save" value="default" type="submit">Guardar cambios</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="birth-dialog" id="birthDialog">
+    <div class="birth-panel">
+      <div class="birth-copy">
+        <p class="model-kicker">Llegó Oli</p>
+        <h2>Nació Olivia</h2>
+        <p>
+          Cargá dos fotos, elegí fecha y hora de nacimiento, y armamos recuerdos listos para descargar o compartir.
+        </p>
+      </div>
+
+      <form class="birth-form" id="birthForm">
+        <div class="birth-fields">
+          <label class="edit-field">
+            <span>Fecha y hora de nacimiento</span>
+            <input id="birthDateTime" type="datetime-local" step="60" required>
+          </label>
+          <label class="edit-field birth-file">
+            <span>Foto para portarretrato</span>
+            <input id="birthPhotoFrame" type="file" accept="image/*" required>
+            <p class="birth-hint">Ideal: una foto tierna o familiar, vertical si tienen.</p>
+          </label>
+          <label class="edit-field birth-file">
+            <span>Foto para credencial</span>
+            <input id="birthPhotoCard" type="file" accept="image/*" required>
+            <p class="birth-hint">Ideal: una foto clara de Oli o de su primera carita.</p>
+          </label>
+        </div>
+
+        <p class="birth-status" id="birthStatus" aria-live="polite">Todo se genera en este navegador.</p>
+
+        <div class="birth-actions">
+          <button class="birth-close" id="closeBirthDialog" type="button">Cerrar</button>
+          <button class="birth-create" id="createBirthAssets" type="submit">Crear recuerdos</button>
+        </div>
+      </form>
+
+      <section class="birth-outputs" id="birthOutputs" aria-label="Recuerdos generados" hidden>
+        <article class="birth-output">
+          <h3>Portarretrato</h3>
+          <img class="birth-preview" id="birthFramePreview" alt="Portarretrato de Oli">
+          <div class="birth-output-actions">
+            <button class="download-asset" type="button" data-download-birth="frame">Descargar</button>
+            <button class="share-asset" type="button" data-share-birth="frame">Compartir</button>
+          </div>
+        </article>
+        <article class="birth-output">
+          <h3>Credencial</h3>
+          <img class="birth-preview" id="birthCardPreview" alt="Credencial de Olivia Schapiro">
+          <div class="birth-output-actions">
+            <button class="download-asset" type="button" data-download-birth="card">Descargar</button>
+            <button class="share-asset" type="button" data-share-birth="card">Compartir</button>
+          </div>
+        </article>
+        <article class="birth-output">
+          <h3>Video</h3>
+          <video class="birth-preview" id="birthVideoPreview" controls muted playsinline></video>
+          <div class="birth-output-actions">
+            <button class="download-asset" type="button" data-download-birth="video">Descargar</button>
+            <button class="share-asset" type="button" data-share-birth="video">Compartir</button>
+          </div>
+        </article>
+      </section>
+    </div>
   </dialog>
 
   <script>
@@ -1386,6 +1686,11 @@
     ];
     const CONFETTI_COLORS = ["#f25f5c", "#ffe066", "#70c1b3", "#247ba0", "#ffffff", "#f7a072"];
     let hasCelebrated = false;
+    const birthAssets = {
+      frame: null,
+      card: null,
+      video: null
+    };
 
     const longDate = new Intl.DateTimeFormat("es-AR", {
       weekday: "long",
@@ -2010,6 +2315,600 @@
       backUpContraction("edición", { ...record });
     }
 
+    function showBirthStatus(message, isError = false) {
+      const status = document.getElementById("birthStatus");
+      status.textContent = message;
+      status.classList.toggle("error", isError);
+    }
+
+    function birthDateShort(timestamp) {
+      return new Intl.DateTimeFormat("es-AR", {
+        timeZone: BUENOS_AIRES_TIME_ZONE,
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(new Date(timestamp));
+    }
+
+    function birthDateLong(timestamp) {
+      const formatted = new Intl.DateTimeFormat("es-AR", {
+        timeZone: BUENOS_AIRES_TIME_ZONE,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(new Date(timestamp));
+      return sentenceCase(formatted);
+    }
+
+    function birthTimeLabel(timestamp) {
+      return `${new Intl.DateTimeFormat("es-AR", {
+        timeZone: BUENOS_AIRES_TIME_ZONE,
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      }).format(new Date(timestamp))} hs`;
+    }
+
+    function roundedRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+      ctx.lineTo(x + width, y + height - r);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+      ctx.lineTo(x + r, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawImageCover(ctx, image, x, y, width, height) {
+      const imageWidth = image.naturalWidth || image.width;
+      const imageHeight = image.naturalHeight || image.height;
+      const scale = Math.max(width / imageWidth, height / imageHeight);
+      const sourceWidth = width / scale;
+      const sourceHeight = height / scale;
+      const sourceX = (imageWidth - sourceWidth) / 2;
+      const sourceY = (imageHeight - sourceHeight) / 2;
+      ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+    }
+
+    function drawImageContain(ctx, image, x, y, width, height) {
+      const imageWidth = image.naturalWidth || image.width;
+      const imageHeight = image.naturalHeight || image.height;
+      const scale = Math.min(width / imageWidth, height / imageHeight);
+      const targetWidth = imageWidth * scale;
+      const targetHeight = imageHeight * scale;
+      const targetX = x + (width - targetWidth) / 2;
+      const targetY = y + (height - targetHeight) / 2;
+      ctx.drawImage(image, targetX, targetY, targetWidth, targetHeight);
+      return { x: targetX, y: targetY, width: targetWidth, height: targetHeight };
+    }
+
+    function drawFitText(ctx, text, x, y, maxWidth, startSize, weight = 900) {
+      let size = startSize;
+      do {
+        ctx.font = `${weight} ${size}px Inter, system-ui, sans-serif`;
+        size -= 2;
+      } while (ctx.measureText(text).width > maxWidth && size > 22);
+      ctx.fillText(text, x, y);
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 3) {
+      const words = text.split(" ");
+      const lines = [];
+      let current = "";
+
+      for (const word of words) {
+        const test = current ? `${current} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth) {
+          current = test;
+        } else {
+          lines.push(current);
+          current = word;
+        }
+      }
+      if (current) lines.push(current);
+
+      lines.slice(0, maxLines).forEach((line, index) => {
+        ctx.fillText(line, x, y + index * lineHeight);
+      });
+    }
+
+    function makeBirthFrameCanvas(photo, birthTimestamp) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1080;
+      canvas.height = 1350;
+      const ctx = canvas.getContext("2d");
+
+      const background = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      background.addColorStop(0, "#fff7ea");
+      background.addColorStop(1, "#edf4ec");
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(23, 33, 27, 0.22)";
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 22;
+      roundedRect(ctx, 56, 52, 968, 1246, 46);
+      ctx.fillStyle = "#fffdf7";
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      roundedRect(ctx, 94, 88, 892, 910, 28);
+      ctx.clip();
+      drawImageCover(ctx, photo, 94, 88, 892, 910);
+      const photoShade = ctx.createLinearGradient(0, 728, 0, 998);
+      photoShade.addColorStop(0, "rgba(0, 0, 0, 0)");
+      photoShade.addColorStop(1, "rgba(0, 0, 0, 0.28)");
+      ctx.fillStyle = photoShade;
+      ctx.fillRect(94, 728, 892, 270);
+      ctx.restore();
+
+      ctx.strokeStyle = "#eadfcf";
+      ctx.lineWidth = 8;
+      roundedRect(ctx, 74, 68, 932, 1206, 38);
+      ctx.stroke();
+
+      ctx.fillStyle = "#d8a43c";
+      ctx.beginPath();
+      ctx.arc(890, 1076, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(930, 1118, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#17211b";
+      ctx.font = "950 104px Inter, system-ui, sans-serif";
+      ctx.fillText("Nació Oli", 104, 1124);
+
+      ctx.fillStyle = "#2f6d50";
+      ctx.font = "850 38px Inter, system-ui, sans-serif";
+      ctx.fillText(`${birthDateLong(birthTimestamp)} · ${birthTimeLabel(birthTimestamp)}`, 108, 1190);
+
+      ctx.fillStyle = "#667169";
+      ctx.font = "700 34px Inter, system-ui, sans-serif";
+      wrapCanvasText(ctx, "Llegaste y el mundo se volvió un lugar más casa.", 108, 1254, 720, 42, 2);
+
+      return canvas;
+    }
+
+    function drawOliShield(ctx, x, y, width, height) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = "#f4b51e";
+      ctx.beginPath();
+      ctx.moveTo(width * 0.5, 0);
+      ctx.lineTo(width, height * 0.18);
+      ctx.lineTo(width * 0.86, height * 0.82);
+      ctx.lineTo(width * 0.5, height);
+      ctx.lineTo(width * 0.14, height * 0.82);
+      ctx.lineTo(0, height * 0.18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#20345e";
+      ctx.stroke();
+      ctx.fillStyle = "#20345e";
+      ctx.font = "950 42px Inter, system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("OLI", width / 2, height * 0.58);
+      ctx.restore();
+      ctx.textAlign = "left";
+    }
+
+    function seedFromText(text) {
+      return [...text].reduce((sum, character) => sum + character.charCodeAt(0), 0);
+    }
+
+    function drawFinder(ctx, x, y, cell) {
+      ctx.fillStyle = "#0f1512";
+      ctx.fillRect(x, y, cell * 7, cell * 7);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x + cell, y + cell, cell * 5, cell * 5);
+      ctx.fillStyle = "#0f1512";
+      ctx.fillRect(x + cell * 2, y + cell * 2, cell * 3, cell * 3);
+    }
+
+    function drawPseudoQr(ctx, x, y, size, seed) {
+      const modules = 25;
+      const cell = size / modules;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(x - 16, y - 16, size + 32, size + 32);
+      drawFinder(ctx, x, y, cell);
+      drawFinder(ctx, x + cell * 18, y, cell);
+      drawFinder(ctx, x, y + cell * 18, cell);
+
+      ctx.fillStyle = "#0f1512";
+      for (let row = 0; row < modules; row += 1) {
+        for (let col = 0; col < modules; col += 1) {
+          const inTopLeft = row < 8 && col < 8;
+          const inTopRight = row < 8 && col > 16;
+          const inBottomLeft = row > 16 && col < 8;
+          if (inTopLeft || inTopRight || inBottomLeft) continue;
+          const value = (row * 17 + col * 29 + seed) % 7;
+          if (value === 0 || value === 2 || value === 5) {
+            ctx.fillRect(x + col * cell, y + row * cell, Math.ceil(cell), Math.ceil(cell));
+          }
+        }
+      }
+    }
+
+    function makeBirthCardCanvas(photo, birthTimestamp) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 768;
+      canvas.height = 1180;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      roundedRect(ctx, 0, 0, canvas.width, canvas.height, 34);
+      ctx.clip();
+
+      const cardGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      cardGradient.addColorStop(0, "#20345e");
+      cardGradient.addColorStop(0.68, "#20345e");
+      cardGradient.addColorStop(1, "#172849");
+      ctx.fillStyle = cardGradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = "#ffffff";
+      for (let index = 0; index < 130; index += 1) {
+        const dotX = (index * 83) % canvas.width;
+        const dotY = 230 + ((index * 47) % 560);
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 1 + (index % 4), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+
+      drawOliShield(ctx, 88, 90, 132, 158);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(556, 160, 108, 0, Math.PI * 2);
+      ctx.clip();
+      drawImageCover(ctx, photo, 448, 52, 216, 216);
+      ctx.restore();
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(556, 160, 108, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "750 24px Inter, system-ui, sans-serif";
+      ctx.fillText("Socia:", 88, 354);
+      ctx.font = "950 70px Inter, system-ui, sans-serif";
+      ctx.fillText("00001", 88, 428);
+
+      ctx.font = "950 34px Inter, system-ui, sans-serif";
+      ctx.fillText("OLIVIA SCHAPIRO", 88, 528);
+      ctx.font = "760 31px Inter, system-ui, sans-serif";
+      ctx.fillText(`DNI ${birthDateShort(birthTimestamp)}`, 88, 570);
+      ctx.fillText(`NACIMIENTO ${birthTimeLabel(birthTimestamp)}`, 88, 612);
+
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(88, 652);
+      ctx.lineTo(680, 652);
+      ctx.stroke();
+
+      ctx.font = "760 26px Inter, system-ui, sans-serif";
+      ctx.fillText("ACTIVA", 88, 710);
+
+      drawPseudoQr(ctx, 246, 748, 276, seedFromText(`Olivia Schapiro ${birthTimestamp}`));
+
+      ctx.fillStyle = "#f4b51e";
+      ctx.fillRect(0, 998, canvas.width, 182);
+      ctx.fillStyle = "#20345e";
+      ctx.font = "950 56px Inter, system-ui, sans-serif";
+      drawFitText(ctx, "#BIENVENIDAOLI", 58, 1100, 650, 56, 950);
+
+      ctx.restore();
+      return canvas;
+    }
+
+    function canvasToBlob(canvas, type = "image/png", quality) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("No se pudo preparar la imagen."));
+        }, type, quality);
+      });
+    }
+
+    function setBirthAsset(kind, blob, filename) {
+      if (birthAssets[kind]?.url) URL.revokeObjectURL(birthAssets[kind].url);
+      const url = URL.createObjectURL(blob);
+      birthAssets[kind] = { blob, filename, url };
+
+      if (kind === "video") {
+        const preview = document.getElementById("birthVideoPreview");
+        preview.src = url;
+        preview.load();
+      } else {
+        const preview = document.getElementById(kind === "frame" ? "birthFramePreview" : "birthCardPreview");
+        preview.src = url;
+      }
+      updateBirthAssetButtons();
+    }
+
+    function updateBirthAssetButtons() {
+      document.querySelectorAll("[data-download-birth], [data-share-birth]").forEach((button) => {
+        const kind = button.dataset.downloadBirth || button.dataset.shareBirth;
+        button.disabled = !birthAssets[kind];
+      });
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve(image);
+        };
+        image.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("No pude leer una de las fotos. Probá con otra imagen."));
+        };
+        image.src = url;
+      });
+    }
+
+    function preferredVideoMimeType() {
+      if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+        return "";
+      }
+      return [
+        "video/mp4;codecs=h264",
+        "video/mp4",
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm"
+      ].find((type) => MediaRecorder.isTypeSupported(type)) || "";
+    }
+
+    function videoExtension(mimeType) {
+      return mimeType.includes("mp4") ? "mp4" : "webm";
+    }
+
+    function drawVideoCard(ctx, image, x, y, width, height, alpha, scale = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      const scaledWidth = width * scale;
+      const scaledHeight = height * scale;
+      const scaledX = x + (width - scaledWidth) / 2;
+      const scaledY = y + (height - scaledHeight) / 2;
+      ctx.shadowColor = "rgba(23, 33, 27, 0.24)";
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetY = 16;
+      roundedRect(ctx, scaledX, scaledY, scaledWidth, scaledHeight, 26);
+      ctx.fillStyle = "#fff";
+      ctx.fill();
+      ctx.clip();
+      drawImageContain(ctx, image, scaledX, scaledY, scaledWidth, scaledHeight);
+      ctx.restore();
+    }
+
+    function drawBirthVideoFrame(ctx, frameCanvas, cardCanvas, birthTimestamp, elapsed) {
+      const width = ctx.canvas.width;
+      const height = ctx.canvas.height;
+      const progress = elapsed / 5000;
+      const background = ctx.createLinearGradient(0, 0, 0, height);
+      background.addColorStop(0, "#fff7ea");
+      background.addColorStop(0.58, "#f4f0e7");
+      background.addColorStop(1, "#dfece2");
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = "rgba(216, 164, 60, 0.28)";
+      ctx.beginPath();
+      ctx.arc(84 + progress * 70, 118, 92, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(47, 109, 80, 0.14)";
+      ctx.beginPath();
+      ctx.arc(640 - progress * 80, 1010, 180, 0, Math.PI * 2);
+      ctx.fill();
+
+      const crossfadeStart = 1850;
+      const crossfadeEnd = 2700;
+      const finalStart = 4050;
+      const firstAlpha = elapsed < crossfadeStart
+        ? 1
+        : elapsed < crossfadeEnd
+          ? 1 - ((elapsed - crossfadeStart) / (crossfadeEnd - crossfadeStart))
+          : elapsed < finalStart ? 0 : 1;
+      const secondAlpha = elapsed < crossfadeStart
+        ? 0
+        : elapsed < crossfadeEnd
+          ? (elapsed - crossfadeStart) / (crossfadeEnd - crossfadeStart)
+          : 1;
+
+      if (elapsed < finalStart) {
+        drawVideoCard(ctx, frameCanvas, 82, 88, 556, 796, firstAlpha, 0.96 + progress * 0.05);
+        drawVideoCard(ctx, cardCanvas, 112, 88, 496, 796, secondAlpha, 0.98 + progress * 0.03);
+      } else {
+        const finalProgress = Math.min(1, (elapsed - finalStart) / 950);
+        drawVideoCard(ctx, frameCanvas, 54, 138, 296, 430, finalProgress, 1);
+        drawVideoCard(ctx, cardCanvas, 370, 138, 296, 430, finalProgress, 1);
+      }
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#17211b";
+      ctx.font = "950 68px Inter, system-ui, sans-serif";
+      const title = elapsed < 2450 ? "Nació Oli" : elapsed < finalStart ? "Olivia Schapiro" : "Bienvenida a casa";
+      ctx.fillText(title, width / 2, 982);
+      ctx.fillStyle = "#2f6d50";
+      ctx.font = "850 30px Inter, system-ui, sans-serif";
+      ctx.fillText(`${birthDateShort(birthTimestamp)} · ${birthTimeLabel(birthTimestamp)}`, width / 2, 1038);
+      ctx.fillStyle = "#667169";
+      ctx.font = "700 29px Inter, system-ui, sans-serif";
+      ctx.fillText("Te esperamos con todo el amor del mundo.", width / 2, 1092);
+      ctx.textAlign = "left";
+    }
+
+    function makeBirthVideoBlob(frameCanvas, cardCanvas, birthTimestamp) {
+      if (!HTMLCanvasElement.prototype.captureStream || typeof MediaRecorder === "undefined") {
+        return Promise.reject(new Error("Este navegador no puede crear video, pero las imágenes quedaron listas."));
+      }
+
+      const videoCanvas = document.createElement("canvas");
+      videoCanvas.width = 720;
+      videoCanvas.height = 1280;
+      const ctx = videoCanvas.getContext("2d");
+      const stream = videoCanvas.captureStream(30);
+      const mimeType = preferredVideoMimeType();
+      const options = mimeType ? { mimeType } : undefined;
+      let recorder;
+
+      try {
+        recorder = new MediaRecorder(stream, options);
+      } catch {
+        stream.getTracks().forEach((track) => track.stop());
+        return Promise.reject(new Error("Este navegador no pudo preparar el video."));
+      }
+
+      const chunks = [];
+      return new Promise((resolve, reject) => {
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onerror = () => {
+          stream.getTracks().forEach((track) => track.stop());
+          reject(new Error("No se pudo crear el video."));
+        };
+        recorder.onstop = () => {
+          stream.getTracks().forEach((track) => track.stop());
+          resolve(new Blob(chunks, { type: mimeType || "video/webm" }));
+        };
+
+        recorder.start(120);
+        const start = performance.now();
+        const animate = (now) => {
+          const elapsed = Math.min(5000, now - start);
+          drawBirthVideoFrame(ctx, frameCanvas, cardCanvas, birthTimestamp, elapsed);
+          if (elapsed < 5000) {
+            requestAnimationFrame(animate);
+          } else {
+            window.setTimeout(() => {
+              if (recorder.state !== "inactive") recorder.stop();
+            }, 120);
+          }
+        };
+        requestAnimationFrame(animate);
+      });
+    }
+
+    function downloadBirthAsset(kind) {
+      const asset = birthAssets[kind];
+      if (!asset) return;
+      const link = document.createElement("a");
+      link.href = asset.url;
+      link.download = asset.filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    async function shareBirthAsset(kind) {
+      const asset = birthAssets[kind];
+      if (!asset) return;
+      const file = new File([asset.blob], asset.filename, { type: asset.blob.type || "application/octet-stream" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+        try {
+          await navigator.share({
+            title: "Nació Oli",
+            text: "Bienvenida Olivia Schapiro",
+            files: [file]
+          });
+          showBirthStatus("Listo. Ya podés elegir WhatsApp o donde quieran compartirlo.");
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
+
+      showBirthStatus("Este navegador no abre el compartir directo. Te lo dejo descargado.");
+      downloadBirthAsset(kind);
+    }
+
+    function openBirthDialog() {
+      const input = document.getElementById("birthDateTime");
+      if (!input.value) input.value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      showBirthStatus("Todo se genera en este navegador.");
+      updateBirthAssetButtons();
+      document.getElementById("birthDialog").showModal();
+    }
+
+    async function createBirthAssets(event) {
+      event.preventDefault();
+      const frameFile = document.getElementById("birthPhotoFrame").files[0];
+      const cardFile = document.getElementById("birthPhotoCard").files[0];
+      const birthTimestamp = fromBuenosAiresInput(document.getElementById("birthDateTime").value);
+      const button = document.getElementById("createBirthAssets");
+
+      if (!Number.isFinite(birthTimestamp)) {
+        showBirthStatus("Elegí fecha y hora de nacimiento.", true);
+        return;
+      }
+      if (!frameFile || !cardFile) {
+        showBirthStatus("Faltan las dos fotos para armar los recuerdos.", true);
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Creando...";
+      document.getElementById("birthOutputs").hidden = false;
+      showBirthStatus("Leyendo fotos...");
+
+      try {
+        const [framePhoto, cardPhoto] = await Promise.all([
+          loadImageFromFile(frameFile),
+          loadImageFromFile(cardFile)
+        ]);
+
+        showBirthStatus("Dibujando portarretrato y credencial...");
+        const frameCanvas = makeBirthFrameCanvas(framePhoto, birthTimestamp);
+        const cardCanvas = makeBirthCardCanvas(cardPhoto, birthTimestamp);
+        const [frameBlob, cardBlob] = await Promise.all([
+          canvasToBlob(frameCanvas),
+          canvasToBlob(cardCanvas)
+        ]);
+
+        setBirthAsset("frame", frameBlob, "nacio-oli-portarretrato.png");
+        setBirthAsset("card", cardBlob, "olivia-schapiro-credencial.png");
+
+        showBirthStatus("Armando video de 5 segundos...");
+        try {
+          const videoBlob = await makeBirthVideoBlob(frameCanvas, cardCanvas, birthTimestamp);
+          const extension = videoExtension(videoBlob.type);
+          setBirthAsset("video", videoBlob, `nacio-oli-video.${extension}`);
+          showBirthStatus("Listo: recuerdos preparados para descargar o compartir por WhatsApp.");
+        } catch (error) {
+          birthAssets.video = null;
+          document.getElementById("birthVideoPreview").removeAttribute("src");
+          updateBirthAssetButtons();
+          showBirthStatus(error.message, true);
+        }
+      } catch (error) {
+        showBirthStatus(error.message || "No se pudieron crear los recuerdos.", true);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Crear recuerdos";
+      }
+    }
+
     let contractions = loadContractions();
 
     document.getElementById("contractionButton").addEventListener("click", handleContractionAction);
@@ -2037,6 +2936,18 @@
       contractions = [];
       renderContractions();
       backUpContraction("borrar todo", null, { deletedRecords });
+    });
+
+    document.getElementById("bornButton").addEventListener("click", openBirthDialog);
+    document.getElementById("birthForm").addEventListener("submit", createBirthAssets);
+    document.getElementById("closeBirthDialog").addEventListener("click", () => {
+      document.getElementById("birthDialog").close();
+    });
+    document.getElementById("birthOutputs").addEventListener("click", (event) => {
+      const downloadButton = event.target.closest("[data-download-birth]");
+      const shareButton = event.target.closest("[data-share-birth]");
+      if (downloadButton) downloadBirthAsset(downloadButton.dataset.downloadBirth);
+      if (shareButton) shareBirthAsset(shareButton.dataset.shareBirth);
     });
 
     function showAppView(view) {
@@ -2090,6 +3001,7 @@
       }
     });
 
+    updateBirthAssetButtons();
     renderToday();
     renderContractions();
     showAppView(location.hash === "#contracciones" ? "contractions" : "countdown");
