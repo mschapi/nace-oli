@@ -1807,6 +1807,7 @@
             <div class="announcement-actions">
               <button type="button" id="copyAnnouncement">Copiar anuncio</button>
               <button type="button" id="shareAnnouncement">Compartir</button>
+              <button class="gold" type="button" id="openWhatsAppAnnouncement">WhatsApp desde mi celular</button>
             </div>
 
             <form class="announcement-form" id="campaignForm">
@@ -1921,6 +1922,7 @@
           </div>
         </article>
         <div class="birth-newsletter-actions">
+          <button class="birth-create" id="shareBirthAssetsWhatsApp" type="button" disabled>Compartir todo por WhatsApp</button>
           <button class="birth-create" id="sendBirthAssetsFromDialog" type="button" disabled>Enviar todo al newsletter</button>
           <p class="birth-status" id="birthNewsletterStatus" aria-live="polite">Disponible para admin cuando los recuerdos estén listos.</p>
         </div>
@@ -1986,6 +1988,7 @@
       video: null
     };
     let preparedAtlantaCrest = null;
+    let mailBackendReadyPromise = null;
 
     const longDate = new Intl.DateTimeFormat("es-AR", {
       weekday: "long",
@@ -2423,6 +2426,50 @@
       } catch {
         if (statusElementId) setInlineStatus(statusElementId, "No se pudo sincronizar. Probá de nuevo en un ratito.", true);
       }
+    }
+
+    function callbackUrl(name) {
+      if (!CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) return "";
+      const separator = CONTRACTION_BACKUP_URL.includes("?") ? "&" : "?";
+      return `${CONTRACTION_BACKUP_URL}${separator}callback=${encodeURIComponent(name)}&_=${Date.now()}`;
+    }
+
+    function checkMailBackendReady() {
+      if (IS_TEST_MODE) return Promise.resolve(true);
+      if (mailBackendReadyPromise) return mailBackendReadyPromise;
+      mailBackendReadyPromise = new Promise((resolve) => {
+        const callbackName = `oliBackend_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const script = document.createElement("script");
+        let settled = false;
+        const finish = (ready) => {
+          if (settled) return;
+          settled = true;
+          delete window[callbackName];
+          script.remove();
+          resolve(Boolean(ready));
+        };
+
+        window[callbackName] = (payload) => {
+          finish(Boolean(payload && payload.mailEnabled));
+        };
+        script.onerror = () => finish(false);
+        script.src = callbackUrl(callbackName);
+        document.body.appendChild(script);
+        window.setTimeout(() => finish(false), 3200);
+      });
+      return mailBackendReadyPromise;
+    }
+
+    async function requireMailBackend(statusElementId) {
+      const ready = await checkMailBackendReady();
+      if (!ready) {
+        setInlineStatus(
+          statusElementId,
+          "Mail no activo: falta redeplegar el Apps Script con el Code.gs nuevo.",
+          true
+        );
+      }
+      return ready;
     }
 
     function frequencyBefore(record) {
@@ -3115,7 +3162,7 @@
         const kind = button.dataset.downloadBirth || button.dataset.shareBirth;
         button.disabled = !birthAssets[kind];
       });
-      document.querySelectorAll("#sendBirthAssetsNewsletter, #sendBirthAssetsFromDialog").forEach((button) => {
+      document.querySelectorAll("#sendBirthAssetsNewsletter, #sendBirthAssetsFromDialog, #shareBirthAssetsWhatsApp").forEach((button) => {
         button.disabled = !hasAllBirthAssets();
       });
     }
@@ -3421,6 +3468,45 @@
       downloadBirthAsset(kind);
     }
 
+    function openWhatsAppText(text, statusElementId) {
+      if (!text.trim()) {
+        setInlineStatus(statusElementId, "No hay mensaje para mandar por WhatsApp.", true);
+        return;
+      }
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank", "noopener");
+      setInlineStatus(statusElementId, "Se abrio WhatsApp. Elegi chat, grupo o lista de difusion.");
+    }
+
+    async function shareBirthAssetsWhatsApp(statusElementId = "birthNewsletterStatus") {
+      if (!hasAllBirthAssets()) {
+        setInlineStatus(statusElementId, "Primero genera portarretrato, credencial y video.", true);
+        return;
+      }
+
+      const files = ["frame", "card", "video"].map((kind) => {
+        const asset = birthAssets[kind];
+        return new File([asset.blob], asset.filename, { type: asset.blob.type || "application/octet-stream" });
+      });
+      const text = "Nacio Oli. Les compartimos los primeros recuerdos de Olivia Schapiro.";
+
+      if (navigator.canShare && navigator.canShare({ files }) && navigator.share) {
+        try {
+          await navigator.share({
+            title: "Nacio Oli",
+            text,
+            files
+          });
+          setInlineStatus(statusElementId, "Listo. Desde el celular podes elegir WhatsApp.");
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
+
+      openWhatsAppText(`${text}\n\nSi no se adjuntan los archivos, descargalos desde esta pantalla y agregalos en WhatsApp.`, statusElementId);
+    }
+
     function blobToBase64(blob) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -3460,6 +3546,7 @@
         setInlineStatus(statusElementId, "Entrá como admin para enviar recuerdos al newsletter.", true);
         return;
       }
+      if (!(await requireMailBackend(statusElementId))) return;
 
       try {
         const attachments = await makeBirthNewsletterAttachments();
@@ -3582,6 +3669,8 @@
         return;
       }
 
+      if (!(await requireMailBackend("subscribeStatus"))) return;
+
       localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, JSON.stringify({
         contact,
         type,
@@ -3629,6 +3718,7 @@
       document.getElementById("campaignSubject").value = state === "nacio"
         ? "Nació Oli"
         : "Oli está en camino";
+      if (!(await requireMailBackend("adminStatus"))) return;
       await sendOliEvent(
         "admin-message",
         { adminKey: ADMIN_CODE, babyState: state, label, subject: document.getElementById("campaignSubject").value, message: text },
@@ -3677,6 +3767,7 @@
         return;
       }
 
+      if (!(await requireMailBackend("adminStatus"))) return;
       await sendOliEvent(
         "admin-message",
         { adminKey: ADMIN_CODE, subject, message },
@@ -3748,12 +3839,20 @@
     document.getElementById("shareAnnouncement").addEventListener("click", () => {
       shareText(document.getElementById("announcementText").textContent, "adminStatus");
     });
+    document.getElementById("openWhatsAppAnnouncement").addEventListener("click", () => {
+      const message = document.getElementById("campaignMessage").value.trim()
+        || document.getElementById("announcementText").textContent;
+      openWhatsAppText(message, "adminStatus");
+    });
     document.getElementById("campaignForm").addEventListener("submit", handleCampaign);
     document.getElementById("sendBirthAssetsNewsletter").addEventListener("click", () => {
       sendBirthAssetsNewsletter("adminStatus");
     });
     document.getElementById("sendBirthAssetsFromDialog").addEventListener("click", () => {
       sendBirthAssetsNewsletter("birthNewsletterStatus");
+    });
+    document.getElementById("shareBirthAssetsWhatsApp").addEventListener("click", () => {
+      shareBirthAssetsWhatsApp("birthNewsletterStatus");
     });
 
     function showAppView(view) {
