@@ -626,6 +626,14 @@
       align-items: start;
     }
 
+    .announcement-grid.public {
+      grid-template-columns: minmax(280px, 560px);
+    }
+
+    .announcement-grid.admin-grid {
+      grid-template-columns: minmax(0, 720px);
+    }
+
     .announcement-panel {
       padding: 22px;
       border: 1px solid var(--line);
@@ -1247,6 +1255,7 @@
     }
 
     .birth-actions button,
+    .birth-newsletter-actions button,
     .birth-output-actions button {
       min-height: 42px;
       padding: 0 15px;
@@ -1331,6 +1340,21 @@
     .birth-output-actions button[disabled] {
       cursor: not-allowed;
       opacity: 0.48;
+    }
+
+    .birth-newsletter-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .birth-newsletter-actions .birth-status {
+      flex: 1 1 230px;
+      text-align: right;
     }
 
     @media (max-width: 760px) {
@@ -1513,6 +1537,15 @@
       .birth-actions button {
         flex: 1 1 140px;
       }
+
+      .birth-newsletter-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .birth-newsletter-actions .birth-status {
+        text-align: left;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1536,7 +1569,7 @@
   <nav class="app-tabs" role="tablist" aria-label="Secciones de la app">
     <button class="app-tab active" role="tab" type="button" data-view="countdown">¿Será hoy?</button>
     <button class="app-tab" role="tab" type="button" data-view="contractions">Contracciones</button>
-    <button class="app-tab" role="tab" type="button" data-view="announcements">Avisos</button>
+    <button class="app-tab" role="tab" type="button" data-view="newsletter">Newsletter</button>
   </nav>
 
   <div id="countdownView">
@@ -1720,15 +1753,15 @@
     <button class="born-button" id="bornButton" type="button">Nació</button>
   </section>
 
-  <section class="announcements-view" id="announcementsView" hidden>
+  <section class="announcements-view" id="newsletterView" hidden>
     <main class="announcements-shell">
       <header class="contractions-heading">
-        <p class="contractions-kicker">Avisos de Oli</p>
-        <h1 class="contractions-title">La red de espera</h1>
-        <p class="contractions-intro">Para tener a todos cerca cuando haya novedades grandes.</p>
+        <p class="contractions-kicker">Newsletter</p>
+        <h1 class="contractions-title">Avisos de Oli</h1>
+        <p class="contractions-intro">Deja un mail o celular para enterarte cuando haya novedades grandes.</p>
       </header>
 
-      <div class="announcement-grid">
+      <div class="announcement-grid public">
         <section class="announcement-panel" aria-labelledby="subscribeTitle">
           <p class="model-kicker">Newsletter familiar</p>
           <h2 id="subscribeTitle">Anotarse</h2>
@@ -1739,11 +1772,24 @@
             </label>
             <button class="primary" type="submit">Quiero enterarme</button>
           </form>
-          <p class="announcement-status" id="subscribeStatus" aria-live="polite">Los avisos importantes van a salir desde acá.</p>
+          <p class="announcement-status" id="subscribeStatus" aria-live="polite">Si dejás mail, el backend puede mandar avisos automáticos cuando esté autorizado.</p>
         </section>
 
+      </div>
+    </main>
+  </section>
+
+  <section class="announcements-view admin-view" id="adminView" hidden>
+    <main class="announcements-shell">
+      <header class="contractions-heading">
+        <p class="contractions-kicker">Admin</p>
+        <h1 class="contractions-title">Central Oli</h1>
+        <p class="contractions-intro">Panel privado para preparar anuncios y pedir envíos al newsletter.</p>
+      </header>
+
+      <div class="announcement-grid admin-grid">
         <section class="announcement-panel" aria-labelledby="adminTitle">
-          <p class="model-kicker">Admin</p>
+          <p class="model-kicker">Acceso</p>
           <h2 id="adminTitle">Anuncios</h2>
           <form class="admin-lock" id="adminUnlockForm">
             <label class="sr-only" for="adminCode">Código admin</label>
@@ -1772,10 +1818,13 @@
                 <span>Mensaje para suscriptores</span>
                 <textarea id="campaignMessage" placeholder="Escribí el mensaje para mandar a todos..."></textarea>
               </label>
-              <button class="primary" type="submit">Guardar mensaje</button>
+              <button class="primary" type="submit">Enviar por mail</button>
             </form>
+            <div class="announcement-actions">
+              <button class="primary" type="button" id="sendBirthAssetsNewsletter" disabled>Enviar recuerdos generados</button>
+            </div>
           </div>
-          <p class="announcement-status" id="adminStatus" aria-live="polite">Solo admin.</p>
+          <p class="announcement-status" id="adminStatus" aria-live="polite">Entrá con el código admin.</p>
         </section>
       </div>
     </main>
@@ -1871,6 +1920,10 @@
             <button class="share-asset" type="button" data-share-birth="video">Compartir</button>
           </div>
         </article>
+        <div class="birth-newsletter-actions">
+          <button class="birth-create" id="sendBirthAssetsFromDialog" type="button" disabled>Enviar todo al newsletter</button>
+          <p class="birth-status" id="birthNewsletterStatus" aria-live="polite">Disponible para admin cuando los recuerdos estén listos.</p>
+        </div>
       </section>
     </div>
   </dialog>
@@ -2342,7 +2395,7 @@
       element.classList.toggle("error", isError);
     }
 
-    async function sendOliEvent(kind, data = {}, statusElementId = null, successMessage = "Guardado en Drive") {
+    async function sendOliEvent(kind, data = {}, statusElementId = null, successMessage = "Solicitud enviada al backend", options = {}) {
       if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
         if (statusElementId) setInlineStatus(statusElementId, "Guardado en este dispositivo");
         return;
@@ -2356,15 +2409,16 @@
         ...data
       };
 
-      if (statusElementId) setInlineStatus(statusElementId, "Guardando en Drive...");
+      if (statusElementId) setInlineStatus(statusElementId, options.sendingMessage || "Enviando al backend...");
       try {
-        await fetch(CONTRACTION_BACKUP_URL, {
+        const request = {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload),
-          keepalive: true
-        });
+          body: JSON.stringify(payload)
+        };
+        if (options.keepalive !== false) request.keepalive = true;
+        await fetch(CONTRACTION_BACKUP_URL, request);
         if (statusElementId) setInlineStatus(statusElementId, successMessage);
       } catch {
         if (statusElementId) setInlineStatus(statusElementId, "No se pudo sincronizar. Probá de nuevo en un ratito.", true);
@@ -3052,10 +3106,17 @@
       updateBirthAssetButtons();
     }
 
+    function hasAllBirthAssets() {
+      return Boolean(birthAssets.frame && birthAssets.card && birthAssets.video);
+    }
+
     function updateBirthAssetButtons() {
       document.querySelectorAll("[data-download-birth], [data-share-birth]").forEach((button) => {
         const kind = button.dataset.downloadBirth || button.dataset.shareBirth;
         button.disabled = !birthAssets[kind];
+      });
+      document.querySelectorAll("#sendBirthAssetsNewsletter, #sendBirthAssetsFromDialog").forEach((button) => {
+        button.disabled = !hasAllBirthAssets();
       });
     }
 
@@ -3109,8 +3170,8 @@
       const scaledX = x + (width - scaledWidth) / 2;
       const scaledY = y + (height - scaledHeight) / 2;
       ctx.shadowColor = "rgba(23, 33, 27, 0.24)";
-      ctx.shadowBlur = 28;
-      ctx.shadowOffsetY = 16;
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 12;
       roundedRect(ctx, scaledX, scaledY, scaledWidth, scaledHeight, 26);
       ctx.fillStyle = "#fff";
       ctx.fill();
@@ -3164,7 +3225,7 @@
       const time = elapsed / 1000;
       const colors = ["#25348a", "#f4b51e", "#3150b7", "#ffd45a"];
 
-      for (let index = 0; index < 9; index += 1) {
+      for (let index = 0; index < 6; index += 1) {
         const radius = 34 + videoRandom(index, 1) * 24;
         const loopHeight = height + 360;
         const speed = 54 + videoRandom(index, 2) * 42;
@@ -3185,7 +3246,7 @@
       const time = elapsed / 1000;
       const colors = ["#25348a", "#f4b51e", "#3150b7", "#ffd45a", "#ffffff"];
 
-      for (let index = 0; index < 96; index += 1) {
+      for (let index = 0; index < 58; index += 1) {
         const loopHeight = height + 260;
         const speed = 128 + videoRandom(index, 1) * 210;
         const y = (videoRandom(index, 2) * loopHeight + time * speed) % loopHeight - 140;
@@ -3275,9 +3336,12 @@
       videoCanvas.width = 720;
       videoCanvas.height = 1280;
       const ctx = videoCanvas.getContext("2d");
-      const stream = videoCanvas.captureStream(30);
+      const targetFps = 24;
+      const stream = videoCanvas.captureStream(targetFps);
       const mimeType = preferredVideoMimeType();
-      const options = mimeType ? { mimeType } : undefined;
+      const options = mimeType
+        ? { mimeType, videoBitsPerSecond: 2400000 }
+        : { videoBitsPerSecond: 2400000 };
       let recorder;
 
       try {
@@ -3303,9 +3367,14 @@
 
         recorder.start(120);
         const start = performance.now();
+        const frameDuration = 1000 / targetFps;
+        let lastDraw = 0;
         const animate = (now) => {
           const elapsed = Math.min(5000, now - start);
-          drawBirthVideoFrame(ctx, frameCanvas, cardCanvas, birthTimestamp, elapsed);
+          if (!lastDraw || now - lastDraw >= frameDuration || elapsed >= 5000) {
+            drawBirthVideoFrame(ctx, frameCanvas, cardCanvas, birthTimestamp, elapsed);
+            lastDraw = now;
+          }
           if (elapsed < 5000) {
             requestAnimationFrame(animate);
           } else {
@@ -3350,6 +3419,71 @@
 
       showBirthStatus("Este navegador no abre el compartir directo. Te lo dejo descargado.");
       downloadBirthAsset(kind);
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const value = String(reader.result || "");
+          resolve(value.includes(",") ? value.split(",")[1] : value);
+        };
+        reader.onerror = () => reject(new Error("No pude preparar un adjunto para email."));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function makeBirthNewsletterAttachments() {
+      const required = ["frame", "card", "video"];
+      const missing = required.filter((kind) => !birthAssets[kind]);
+      if (missing.length) {
+        throw new Error("Primero generá portarretrato, credencial y video.");
+      }
+
+      const totalBytes = required.reduce((sum, kind) => sum + birthAssets[kind].blob.size, 0);
+      if (totalBytes > 12 * 1024 * 1024) {
+        throw new Error("Los recuerdos pesan demasiado para mandarlos por email. Descargalos y compartilos manualmente.");
+      }
+
+      return Promise.all(required.map(async (kind) => {
+        const asset = birthAssets[kind];
+        return {
+          filename: asset.filename,
+          mimeType: asset.blob.type || "application/octet-stream",
+          base64: await blobToBase64(asset.blob)
+        };
+      }));
+    }
+
+    async function sendBirthAssetsNewsletter(statusElementId = "adminStatus") {
+      if (!isAdminUnlocked()) {
+        setInlineStatus(statusElementId, "Entrá como admin para enviar recuerdos al newsletter.", true);
+        return;
+      }
+
+      try {
+        const attachments = await makeBirthNewsletterAttachments();
+        const subject = "Nació Oli";
+        const message = document.getElementById("campaignMessage")?.value.trim()
+          || "Nació Oli. Les compartimos los primeros recuerdos de Olivia Schapiro.";
+        await sendOliEvent(
+          "admin-message",
+          {
+            adminKey: ADMIN_CODE,
+            subject,
+            message,
+            attachments
+          },
+          statusElementId,
+          "Solicitud enviada: si el backend está actualizado, saldrá por email con adjuntos.",
+          {
+            keepalive: false,
+            sendingMessage: "Preparando email con fotos y video..."
+          }
+        );
+      } catch (error) {
+        setInlineStatus(statusElementId, error.message || "No pude preparar el envío.", true);
+      }
     }
 
     function openBirthDialog() {
@@ -3458,7 +3592,9 @@
         "subscriber",
         { contact, type },
         "subscribeStatus",
-        "Listo. Quedaste en la lista de avisos de Oli."
+        type === "email"
+          ? "Solicitud enviada. Si el backend está actualizado, te llegará un mail de confirmación."
+          : "Solicitud enviada. El celular queda registrado para avisos manuales por WhatsApp."
       );
       input.value = "";
     }
@@ -3471,7 +3607,8 @@
       const unlocked = isAdminUnlocked();
       document.getElementById("adminUnlockForm").hidden = unlocked;
       document.getElementById("adminPanel").hidden = !unlocked;
-      setInlineStatus("adminStatus", unlocked ? "Modo admin activo." : "Solo admin.");
+      setInlineStatus("adminStatus", unlocked ? "Modo admin activo. URL privada: #admin." : "Entrá con el código admin.");
+      updateBirthAssetButtons();
     }
 
     function pickAnnouncement(state) {
@@ -3493,10 +3630,10 @@
         ? "Nació Oli"
         : "Oli está en camino";
       await sendOliEvent(
-        "admin-announcement",
-        { adminKey: ADMIN_CODE, babyState: state, label, message: text },
+        "admin-message",
+        { adminKey: ADMIN_CODE, babyState: state, label, subject: document.getElementById("campaignSubject").value, message: text },
         "adminStatus",
-        `${label}: anuncio guardado en Drive.`
+        `${label}: solicitud enviada. Con backend actualizado sale por email; WhatsApp es compartir manual.`
       );
     }
 
@@ -3544,7 +3681,7 @@
         "admin-message",
         { adminKey: ADMIN_CODE, subject, message },
         "adminStatus",
-        "Mensaje guardado para los suscriptores."
+        "Solicitud enviada. Con backend actualizado sale por email a los suscriptores."
       );
     }
 
@@ -3612,21 +3749,29 @@
       shareText(document.getElementById("announcementText").textContent, "adminStatus");
     });
     document.getElementById("campaignForm").addEventListener("submit", handleCampaign);
+    document.getElementById("sendBirthAssetsNewsletter").addEventListener("click", () => {
+      sendBirthAssetsNewsletter("adminStatus");
+    });
+    document.getElementById("sendBirthAssetsFromDialog").addEventListener("click", () => {
+      sendBirthAssetsNewsletter("birthNewsletterStatus");
+    });
 
     function showAppView(view) {
-      const activeView = ["countdown", "contractions", "announcements"].includes(view) ? view : "countdown";
+      const activeView = ["countdown", "contractions", "newsletter", "admin"].includes(view) ? view : "countdown";
       const showContractions = activeView === "contractions";
-      const showAnnouncements = activeView === "announcements";
+      const showNewsletter = activeView === "newsletter";
+      const showAdmin = activeView === "admin";
       document.getElementById("countdownView").hidden = activeView !== "countdown";
       document.getElementById("contractionsView").hidden = !showContractions;
-      document.getElementById("announcementsView").hidden = !showAnnouncements;
+      document.getElementById("newsletterView").hidden = !showNewsletter;
+      document.getElementById("adminView").hidden = !showAdmin;
       document.querySelectorAll(".app-tab").forEach((tab) => {
         const selected = tab.dataset.view === activeView;
         tab.classList.toggle("active", selected);
         tab.setAttribute("aria-selected", String(selected));
       });
       if (showContractions) renderContractions();
-      if (showAnnouncements) renderAdminState();
+      if (showAdmin) renderAdminState();
     }
 
     document.querySelectorAll(".app-tab").forEach((tab) => {
@@ -3634,7 +3779,7 @@
         const view = tab.dataset.view;
         const hash = view === "contractions"
           ? "#contracciones"
-          : view === "announcements" ? "#avisos" : location.pathname + location.search;
+          : view === "newsletter" ? "#newsletter" : location.pathname + location.search;
         history.replaceState(null, "", hash);
         showAppView(view);
       });
@@ -3643,7 +3788,7 @@
     window.addEventListener("hashchange", () => {
       showAppView(location.hash === "#contracciones"
         ? "contractions"
-        : location.hash === "#avisos" ? "announcements" : "countdown");
+        : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
     });
 
     setInterval(() => {
@@ -3679,7 +3824,7 @@
     renderContractions();
     showAppView(location.hash === "#contracciones"
       ? "contractions"
-      : location.hash === "#avisos" ? "announcements" : "countdown");
+      : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
   </script>
 </body>
 </html>
