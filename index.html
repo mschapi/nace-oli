@@ -1758,7 +1758,7 @@
       <header class="contractions-heading">
         <p class="contractions-kicker">Newsletter</p>
         <h1 class="contractions-title">Avisos de Oli</h1>
-        <p class="contractions-intro">Deja un mail o celular para enterarte cuando haya novedades grandes.</p>
+        <p class="contractions-intro">Deja tu mail para enterarte cuando haya novedades grandes.</p>
       </header>
 
       <div class="announcement-grid public">
@@ -1767,12 +1767,12 @@
           <h2 id="subscribeTitle">Anotarse</h2>
           <form class="announcement-form" id="subscribeForm">
             <label class="edit-field">
-              <span>Celular o mail</span>
-              <input id="subscriberContact" type="text" inputmode="email" autocomplete="email" placeholder="11 5555 5555 o nombre@mail.com" required>
+              <span>Mail</span>
+              <input id="subscriberContact" type="email" inputmode="email" autocomplete="email" placeholder="nombre@mail.com" required>
             </label>
             <button class="primary" type="submit">Quiero enterarme</button>
           </form>
-          <p class="announcement-status" id="subscribeStatus" aria-live="polite">Si dejás mail, el backend puede mandar avisos automáticos cuando esté autorizado.</p>
+          <p class="announcement-status" id="subscribeStatus" aria-live="polite">Los avisos importantes van a llegar por mail.</p>
         </section>
 
       </div>
@@ -1875,6 +1875,10 @@
           <label class="edit-field">
             <span>Fecha y hora de nacimiento</span>
             <input id="birthDateTime" type="datetime-local" step="60" required>
+          </label>
+          <label class="edit-field">
+            <span>Peso</span>
+            <input id="birthWeight" type="text" inputmode="decimal" placeholder="3,250 kg">
           </label>
           <label class="edit-field birth-file">
             <span>Foto para portarretrato</span>
@@ -1989,6 +1993,8 @@
     };
     let preparedAtlantaCrest = null;
     let mailBackendReadyPromise = null;
+    let babyStatus = null;
+    let babyStatusPromise = null;
 
     const longDate = new Intl.DateTimeFormat("es-AR", {
       weekday: "long",
@@ -2276,10 +2282,14 @@
       const key = `${STORAGE_PREFIX}${dayKey(today)}`;
       const saved = readSavedDraw(key);
       const globalDraw = globalDrawForDate(today, chance);
+      const statusMessage = babyStatusMessage();
       button.disabled = false;
       button.textContent = "Preguntar por Oli";
 
-      if (saved) {
+      if (statusMessage) {
+        setAnswer(true, "Actualizado por admin");
+        button.textContent = statusMessage;
+      } else if (saved) {
         setAnswer(
           globalDraw.yes,
           "Respuesta única del día · igual en todos los teléfonos",
@@ -2299,6 +2309,13 @@
     }
 
     document.getElementById("drawButton").addEventListener("click", () => {
+      const statusMessage = babyStatusMessage();
+      if (statusMessage) {
+        setAnswer(true, "Actualizado por admin", undefined, true);
+        document.getElementById("drawButton").textContent = statusMessage;
+        return;
+      }
+
       const { today, row, before, after } = currentState();
       const chance = before ? 0 : after ? 1 : row.buttonChance;
       const key = `${STORAGE_PREFIX}${dayKey(today)}`;
@@ -2434,29 +2451,35 @@
       return `${CONTRACTION_BACKUP_URL}${separator}callback=${encodeURIComponent(name)}&_=${Date.now()}`;
     }
 
-    function checkMailBackendReady() {
-      if (IS_TEST_MODE) return Promise.resolve(true);
-      if (mailBackendReadyPromise) return mailBackendReadyPromise;
-      mailBackendReadyPromise = new Promise((resolve) => {
+    function fetchBackendStatus() {
+      if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
+        return Promise.resolve({ status: "test", mailEnabled: true, babyStatus: null });
+      }
+
+      return new Promise((resolve) => {
         const callbackName = `oliBackend_${Date.now()}_${Math.random().toString(16).slice(2)}`;
         const script = document.createElement("script");
         let settled = false;
-        const finish = (ready) => {
+        const finish = (payload) => {
           if (settled) return;
           settled = true;
           delete window[callbackName];
           script.remove();
-          resolve(Boolean(ready));
+          resolve(payload || {});
         };
 
-        window[callbackName] = (payload) => {
-          finish(Boolean(payload && payload.mailEnabled));
-        };
-        script.onerror = () => finish(false);
+        window[callbackName] = finish;
+        script.onerror = () => finish({});
         script.src = callbackUrl(callbackName);
         document.body.appendChild(script);
-        window.setTimeout(() => finish(false), 3200);
+        window.setTimeout(() => finish({}), 3200);
       });
+    }
+
+    function checkMailBackendReady() {
+      if (IS_TEST_MODE) return Promise.resolve(true);
+      if (mailBackendReadyPromise) return mailBackendReadyPromise;
+      mailBackendReadyPromise = fetchBackendStatus().then((payload) => Boolean(payload && payload.mailEnabled));
       return mailBackendReadyPromise;
     }
 
@@ -2470,6 +2493,26 @@
         );
       }
       return ready;
+    }
+
+    function babyStatusMessage() {
+      if (!babyStatus || !babyStatus.state) return null;
+      if (babyStatus.state === "en_camino") {
+        return "Oli está en marcha! en unas pocas horas estará con nosotros";
+      }
+      if (babyStatus.state === "nacio") {
+        return "Oli ya nació";
+      }
+      return null;
+    }
+
+    function syncBabyStatus() {
+      babyStatusPromise = fetchBackendStatus().then((payload) => {
+        babyStatus = payload && payload.babyStatus ? payload.babyStatus : null;
+        renderToday();
+        return babyStatus;
+      }).catch(() => null);
+      return babyStatusPromise;
     }
 
     function frequencyBefore(record) {
@@ -2888,7 +2931,15 @@
       ctx.restore();
     }
 
-    function makeBirthFrameCanvas(photo, birthTimestamp) {
+    function normalizeBirthWeight(value) {
+      const trimmed = String(value || "").trim();
+      if (!trimmed) return "";
+      return trimmed.toLowerCase().includes("kg") || trimmed.toLowerCase().includes("g")
+        ? trimmed
+        : `${trimmed} kg`;
+    }
+
+    function makeBirthFrameCanvas(photo, birthTimestamp, birthWeight = "") {
       const canvas = document.createElement("canvas");
       canvas.width = 1080;
       canvas.height = 1350;
@@ -2940,7 +2991,12 @@
 
       ctx.fillStyle = "#2f6d50";
       ctx.font = "850 38px Inter, system-ui, sans-serif";
-      ctx.fillText(`${birthDateLong(birthTimestamp)} · ${birthTimeLabel(birthTimestamp)}`, 108, 1190);
+      const details = [
+        birthDateLong(birthTimestamp),
+        birthTimeLabel(birthTimestamp),
+        normalizeBirthWeight(birthWeight)
+      ].filter(Boolean).join(" · ");
+      drawFitText(ctx, details, 108, 1190, 864, 38, 850);
 
       ctx.save();
       roundedRect(ctx, 136, 1204, 808, 92, 30);
@@ -3586,6 +3642,7 @@
       const frameFile = document.getElementById("birthPhotoFrame").files[0];
       const cardFile = document.getElementById("birthPhotoCard").files[0];
       const birthTimestamp = fromBuenosAiresInput(document.getElementById("birthDateTime").value);
+      const birthWeight = document.getElementById("birthWeight").value;
       const button = document.getElementById("createBirthAssets");
 
       if (!Number.isFinite(birthTimestamp)) {
@@ -3610,7 +3667,7 @@
         ]);
 
         showBirthStatus("Dibujando portarretrato y credencial...");
-        const frameCanvas = makeBirthFrameCanvas(framePhoto, birthTimestamp);
+        const frameCanvas = makeBirthFrameCanvas(framePhoto, birthTimestamp, birthWeight);
         const cardCanvas = makeBirthCardCanvas(cardPhoto, birthTimestamp, atlantaCrest);
         const [frameBlob, cardBlob] = await Promise.all([
           canvasToBlob(frameCanvas),
@@ -3640,22 +3697,12 @@
       }
     }
 
-    function subscriberType(contact) {
-      if (contact.includes("@")) return "email";
-      const digits = contact.replace(/\D/g, "");
-      return digits.length >= 8 ? "phone" : "";
-    }
-
     function cleanSubscriberContact(value) {
       return value.trim().replace(/\s+/g, " ");
     }
 
     function validateSubscriberContact(contact) {
-      const type = subscriberType(contact);
-      if (type === "email") {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) ? type : "";
-      }
-      return type;
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) ? "email" : "";
     }
 
     async function handleSubscribe(event) {
@@ -3665,7 +3712,7 @@
       const type = validateSubscriberContact(contact);
 
       if (!type) {
-        setInlineStatus("subscribeStatus", "Poné un mail válido o un celular con código de área.", true);
+        setInlineStatus("subscribeStatus", "Poné un mail válido.", true);
         return;
       }
 
@@ -3681,9 +3728,7 @@
         "subscriber",
         { contact, type },
         "subscribeStatus",
-        type === "email"
-          ? "Solicitud enviada. Si el backend está actualizado, te llegará un mail de confirmación."
-          : "Solicitud enviada. El celular queda registrado para avisos manuales por WhatsApp."
+        "Listo. Te va a llegar un mail de confirmación."
       );
       input.value = "";
     }
@@ -3714,16 +3759,23 @@
     async function handleBabyState(state) {
       const text = pickAnnouncement(state);
       const label = state === "nacio" ? "Nació" : "En camino";
+      babyStatus = {
+        state,
+        label,
+        message: text,
+        at: new Date().toISOString()
+      };
       setAnnouncementText(text);
       document.getElementById("campaignSubject").value = state === "nacio"
         ? "Nació Oli"
         : "Oli está en camino";
+      renderToday();
       if (!(await requireMailBackend("adminStatus"))) return;
       await sendOliEvent(
         "admin-message",
         { adminKey: ADMIN_CODE, babyState: state, label, subject: document.getElementById("campaignSubject").value, message: text },
         "adminStatus",
-        `${label}: solicitud enviada. Con backend actualizado sale por email; WhatsApp es compartir manual.`
+        `${label}: estado guardado y mail enviado a los suscriptores.`
       );
     }
 
@@ -3908,11 +3960,16 @@
       }
     }, 30000);
 
+    setInterval(() => {
+      syncBabyStatus();
+    }, 45000);
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         const currentDay = dayKey(new Date());
         if (currentDay !== renderedDay) hasCelebrated = false;
         renderedDay = currentDay;
+        syncBabyStatus();
         renderToday();
       }
     });
@@ -3921,6 +3978,7 @@
     renderAdminState();
     renderToday();
     renderContractions();
+    syncBabyStatus();
     showAppView(location.hash === "#contracciones"
       ? "contractions"
       : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
