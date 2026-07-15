@@ -3032,18 +3032,6 @@
       ].filter(Boolean).join(" · ");
       drawFitText(ctx, details, 108, 1190, 864, 38, 850);
 
-      ctx.save();
-      roundedRect(ctx, 136, 1204, 808, 92, 30);
-      ctx.fillStyle = "#f6efe1";
-      ctx.fill();
-      ctx.strokeStyle = "#eadfcf";
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      ctx.fillStyle = "#17211b";
-      ctx.font = "900 42px Inter, system-ui, sans-serif";
-      drawCenteredWrappedText(ctx, "Bienvenida! Que seas muy feliz!", 540, 1262, 740, 48, 2);
-      ctx.restore();
-
       return canvas;
     }
 
