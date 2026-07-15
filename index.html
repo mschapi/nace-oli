@@ -2010,6 +2010,12 @@
         "La familia anuncia con sonrisa imposible: Olivia Schapiro ya llegó. Bienvenida, Oli."
       ]
     };
+    const BABY_ALREADY_BORN_STATUS = {
+      state: "nacio",
+      label: "Nació",
+      message: "Oli ya nació",
+      at: "2026-07-15T00:00:00-03:00"
+    };
     const CONFETTI_COLORS = ["#f25f5c", "#ffe066", "#70c1b3", "#247ba0", "#ffffff", "#f7a072"];
     let hasCelebrated = false;
     const birthAssets = {
@@ -2019,7 +2025,7 @@
     };
     let preparedAtlantaCrest = null;
     let mailBackendReadyPromise = null;
-    let babyStatus = null;
+    let babyStatus = BABY_ALREADY_BORN_STATUS;
     let babyStatusPromise = null;
 
     const longDate = new Intl.DateTimeFormat("es-AR", {
@@ -2313,7 +2319,7 @@
       button.textContent = "Preguntar por Oli";
 
       if (statusMessage) {
-        setAnswer(true, "Actualizado por admin");
+        setAnswer(true, statusMessage);
         button.textContent = statusMessage;
       } else if (saved) {
         setAnswer(
@@ -2337,7 +2343,7 @@
     document.getElementById("drawButton").addEventListener("click", () => {
       const statusMessage = babyStatusMessage();
       if (statusMessage) {
-        setAnswer(true, "Actualizado por admin", undefined, true);
+        setAnswer(true, statusMessage, undefined, true);
         document.getElementById("drawButton").textContent = statusMessage;
         return;
       }
@@ -2536,7 +2542,7 @@
 
     function syncBabyStatus() {
       babyStatusPromise = fetchBackendStatus().then((payload) => {
-        babyStatus = payload && payload.babyStatus ? payload.babyStatus : null;
+        babyStatus = payload && payload.babyStatus ? payload.babyStatus : BABY_ALREADY_BORN_STATUS;
         renderToday();
         return babyStatus;
       }).catch(() => null);
