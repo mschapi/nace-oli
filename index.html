@@ -1067,6 +1067,166 @@
       font-weight: 850;
     }
 
+    .control-view {
+      min-height: calc(100svh - 54px);
+      background: linear-gradient(180deg, #fffaf0 0%, #f5f7f1 48%, #ffffff 100%);
+    }
+
+    .control-shell {
+      width: min(1060px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+    }
+
+    .control-panel {
+      display: grid;
+      gap: 16px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 14px 34px rgba(23, 33, 27, 0.08);
+    }
+
+    .control-panel h2 {
+      margin: 0;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      letter-spacing: 0;
+    }
+
+    .control-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-toggle-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-toggle {
+      min-height: 72px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1.02rem;
+      font-weight: 950;
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .control-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(23, 33, 27, 0.09);
+    }
+
+    .control-toggle.active {
+      border-color: var(--leaf);
+      background: #e9f3ec;
+      color: var(--leaf);
+      box-shadow: inset 0 0 0 2px rgba(63, 128, 92, 0.12);
+    }
+
+    .control-submit {
+      appearance: none;
+      min-height: 46px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--leaf);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .control-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .control-count {
+      min-height: 74px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fafaf7;
+    }
+
+    .control-count span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .control-count strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .control-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .control-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    .control-table th,
+    .control-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .control-table th {
+      color: var(--muted);
+      background: #f1f4ef;
+      font-size: 0.68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .control-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .control-empty {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .control-photo-thumb {
+      width: 46px;
+      height: 46px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #ecefe9;
+    }
+
     .born-button {
       position: fixed;
       right: max(18px, env(safe-area-inset-right));
@@ -1493,6 +1653,19 @@
         padding: 34px 0 46px;
       }
 
+      .control-shell {
+        width: min(100% - 28px, 560px);
+        padding: 34px 0 46px;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .control-table {
+        min-width: 480px;
+      }
+
       .announcement-grid {
         grid-template-columns: 1fr;
       }
@@ -1592,6 +1765,7 @@
   <nav class="app-tabs" role="tablist" aria-label="Secciones de la app">
     <button class="app-tab active" role="tab" type="button" data-view="countdown">¿Será hoy?</button>
     <button class="app-tab" role="tab" type="button" data-view="contractions">Contracciones</button>
+    <button class="app-tab" role="tab" type="button" data-view="control">Control</button>
     <button class="app-tab" role="tab" type="button" data-view="newsletter">Newsletter</button>
   </nav>
 
@@ -1777,6 +1951,109 @@
       </section>
     </main>
     <button class="born-button" id="bornButton" type="button">Nació</button>
+  </section>
+
+  <section class="control-view" id="controlView" hidden>
+    <main class="control-shell">
+      <header class="contractions-heading">
+        <p class="contractions-kicker">Primeros días</p>
+        <h1 class="contractions-title">Control de Oli</h1>
+        <p class="contractions-intro">Registros simples para mirar el día con un poquito más de calma.</p>
+      </header>
+
+      <div class="control-grid">
+        <section class="control-panel" aria-labelledby="diaperTitle">
+          <div>
+            <p class="model-kicker">Pañales</p>
+            <h2 id="diaperTitle">Cambio rápido</h2>
+          </div>
+          <form class="control-form" id="diaperForm">
+            <div class="control-toggle-row" aria-label="Tipo de pañal">
+              <button class="control-toggle" type="button" data-diaper-kind="pee">Pis</button>
+              <button class="control-toggle" type="button" data-diaper-kind="poop">Caca</button>
+            </div>
+            <label class="edit-field">
+              <span>Hora</span>
+              <input id="diaperTime" type="datetime-local" step="60" required>
+            </label>
+            <label class="edit-field birth-file">
+              <span>Foto opcional</span>
+              <input id="diaperPhoto" type="file" accept="image/*">
+            </label>
+            <button class="control-submit" type="submit">Guardar pañal</button>
+          </form>
+          <p class="announcement-status" id="diaperStatus" aria-live="polite">Guardado en este dispositivo.</p>
+          <div class="control-summary" aria-label="Pañales de hoy">
+            <div class="control-count">
+              <span>Pis hoy</span>
+              <strong id="diaperPeeToday">0</strong>
+            </div>
+            <div class="control-count">
+              <span>Caca hoy</span>
+              <strong id="diaperPoopToday">0</strong>
+            </div>
+          </div>
+          <p class="control-empty" id="diaperEmpty">Todavía no hay pañales cargados.</p>
+          <div class="control-table-wrap" id="diaperDailyWrap" hidden>
+            <table class="control-table">
+              <thead>
+                <tr>
+                  <th>Día</th>
+                  <th>Pis</th>
+                  <th>Caca</th>
+                  <th>Total</th>
+                  <th>Fotos</th>
+                </tr>
+              </thead>
+              <tbody id="diaperDailyRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="control-panel" aria-labelledby="feedingTitle">
+          <div>
+            <p class="model-kicker">Teta</p>
+            <h2 id="feedingTitle">Tomas del día</h2>
+          </div>
+          <form class="control-form" id="feedingForm">
+            <label class="edit-field">
+              <span>Hora</span>
+              <input id="feedingTime" type="datetime-local" step="60" required>
+            </label>
+            <label class="edit-field">
+              <span>Duración opcional</span>
+              <input id="feedingDuration" type="number" inputmode="numeric" min="0" step="1" placeholder="Minutos">
+            </label>
+            <button class="control-submit" type="submit">Guardar toma</button>
+          </form>
+          <p class="announcement-status" id="feedingStatus" aria-live="polite">Guardado en este dispositivo.</p>
+          <div class="control-summary" aria-label="Tomas de hoy">
+            <div class="control-count">
+              <span>Tomas hoy</span>
+              <strong id="feedingCountToday">0</strong>
+            </div>
+            <div class="control-count">
+              <span>Minutos hoy</span>
+              <strong id="feedingMinutesToday">0</strong>
+            </div>
+          </div>
+          <p class="control-empty" id="feedingEmpty">Todavía no hay tomas cargadas.</p>
+          <div class="control-table-wrap" id="feedingDailyWrap" hidden>
+            <table class="control-table">
+              <thead>
+                <tr>
+                  <th>Día</th>
+                  <th>Tomas</th>
+                  <th>Minutos</th>
+                  <th>Promedio</th>
+                </tr>
+              </thead>
+              <tbody id="feedingDailyRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
   </section>
 
   <section class="announcements-view" id="newsletterView" hidden>
@@ -1971,6 +2248,8 @@
     const GLOBAL_DRAW_VERSION = "oli-global-2026-07-14";
     const STORAGE_PREFIX = "nace-oli:v2:";
     const CONTRACTION_STORAGE_KEY = "nace-oli:contractions:v1";
+    const CONTROL_DIAPER_STORAGE_KEY = "nace-oli:control:diapers:v1";
+    const CONTROL_FEEDING_STORAGE_KEY = "nace-oli:control:feedings:v1";
     const DEVICE_STORAGE_KEY = "nace-oli:device-id:v1";
     const SUBSCRIPTION_STORAGE_KEY = "nace-oli:subscription:v1";
     const ADMIN_STORAGE_KEY = "nace-oli:admin:v1";
@@ -1981,6 +2260,12 @@
     const ACTIVE_CONTRACTION_STORAGE_KEY = IS_TEST_MODE
       ? `${CONTRACTION_STORAGE_KEY}:test`
       : CONTRACTION_STORAGE_KEY;
+    const ACTIVE_DIAPER_STORAGE_KEY = IS_TEST_MODE
+      ? `${CONTROL_DIAPER_STORAGE_KEY}:test`
+      : CONTROL_DIAPER_STORAGE_KEY;
+    const ACTIVE_FEEDING_STORAGE_KEY = IS_TEST_MODE
+      ? `${CONTROL_FEEDING_STORAGE_KEY}:test`
+      : CONTROL_FEEDING_STORAGE_KEY;
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
@@ -2748,6 +3033,244 @@
       if (!value) return null;
       const timestamp = new Date(`${value}-03:00`).getTime();
       return Number.isFinite(timestamp) ? timestamp : null;
+    }
+
+    function controlDayKey(timestamp) {
+      return toBuenosAiresInput(timestamp).slice(0, 10);
+    }
+
+    function controlDayLabel(key) {
+      const timestamp = new Date(`${key}T12:00:00-03:00`).getTime();
+      return Number.isFinite(timestamp)
+        ? contractionDate.format(new Date(timestamp)).replace(".", "")
+        : key;
+    }
+
+    function loadDiaperEntries() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(ACTIVE_DIAPER_STORAGE_KEY) || "[]");
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter((item) => item && Number.isFinite(item.timestamp) && (item.pee || item.poop))
+          .map((item) => ({
+            id: item.id || makeId(),
+            timestamp: Number(item.timestamp),
+            pee: Boolean(item.pee),
+            poop: Boolean(item.poop),
+            photo: typeof item.photo === "string" && item.photo.startsWith("data:image/") ? item.photo : ""
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp);
+      } catch {
+        return [];
+      }
+    }
+
+    function loadFeedingEntries() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(ACTIVE_FEEDING_STORAGE_KEY) || "[]");
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter((item) => item && Number.isFinite(item.timestamp))
+          .map((item) => ({
+            id: item.id || makeId(),
+            timestamp: Number(item.timestamp),
+            durationMinutes: Number.isFinite(item.durationMinutes) && item.durationMinutes > 0
+              ? Number(item.durationMinutes)
+              : null
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveDiaperEntries() {
+      diaperEntries.sort((a, b) => a.timestamp - b.timestamp);
+      localStorage.setItem(ACTIVE_DIAPER_STORAGE_KEY, JSON.stringify(diaperEntries));
+    }
+
+    function saveFeedingEntries() {
+      feedingEntries.sort((a, b) => a.timestamp - b.timestamp);
+      localStorage.setItem(ACTIVE_FEEDING_STORAGE_KEY, JSON.stringify(feedingEntries));
+    }
+
+    function resetControlTimes() {
+      const value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      const diaperTime = document.getElementById("diaperTime");
+      const feedingTime = document.getElementById("feedingTime");
+      if (diaperTime && !diaperTime.value) diaperTime.value = value;
+      if (feedingTime && !feedingTime.value) feedingTime.value = value;
+    }
+
+    async function compactControlPhoto(file) {
+      if (!file) return "";
+      const image = await loadImageFromFile(file);
+      const canvas = document.createElement("canvas");
+      canvas.width = 360;
+      canvas.height = 360;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#f1f4ef";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawImageCover(ctx, image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.72);
+    }
+
+    function groupedDiaperDays() {
+      const days = new Map();
+      diaperEntries.forEach((entry) => {
+        const key = controlDayKey(entry.timestamp);
+        if (!days.has(key)) days.set(key, { key, pee: 0, poop: 0, total: 0, photos: 0, photo: "" });
+        const day = days.get(key);
+        if (entry.pee) day.pee += 1;
+        if (entry.poop) day.poop += 1;
+        if (entry.photo) {
+          day.photos += 1;
+          day.photo = entry.photo;
+        }
+        day.total += 1;
+      });
+      return Array.from(days.values()).sort((a, b) => b.key.localeCompare(a.key));
+    }
+
+    function groupedFeedingDays() {
+      const days = new Map();
+      feedingEntries.forEach((entry) => {
+        const key = controlDayKey(entry.timestamp);
+        if (!days.has(key)) days.set(key, { key, count: 0, minutes: 0, withDuration: 0 });
+        const day = days.get(key);
+        day.count += 1;
+        if (Number.isFinite(entry.durationMinutes)) {
+          day.minutes += entry.durationMinutes;
+          day.withDuration += 1;
+        }
+      });
+      return Array.from(days.values()).sort((a, b) => b.key.localeCompare(a.key));
+    }
+
+    function renderDiaperControls() {
+      document.querySelectorAll("[data-diaper-kind]").forEach((button) => {
+        const active = button.dataset.diaperKind === "pee" ? diaperDraft.pee : diaperDraft.poop;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
+    function renderControl() {
+      resetControlTimes();
+      renderDiaperControls();
+
+      const todayKey = controlDayKey(Date.now());
+      const diaperToday = diaperEntries.filter((entry) => controlDayKey(entry.timestamp) === todayKey);
+      document.getElementById("diaperPeeToday").textContent = String(diaperToday.filter((entry) => entry.pee).length);
+      document.getElementById("diaperPoopToday").textContent = String(diaperToday.filter((entry) => entry.poop).length);
+
+      const diaperDays = groupedDiaperDays();
+      const diaperRows = document.getElementById("diaperDailyRows");
+      diaperRows.innerHTML = diaperDays.map((day) => `
+        <tr>
+          <td>${controlDayLabel(day.key)}</td>
+          <td>${day.pee}</td>
+          <td>${day.poop}</td>
+          <td>${day.total}</td>
+          <td>${day.photo ? `<img class="control-photo-thumb" src="${day.photo}" alt="Última foto del día"> ` : ""}${day.photos}</td>
+        </tr>
+      `).join("");
+      document.getElementById("diaperEmpty").hidden = diaperDays.length > 0;
+      document.getElementById("diaperDailyWrap").hidden = diaperDays.length === 0;
+
+      const feedingToday = feedingEntries.filter((entry) => controlDayKey(entry.timestamp) === todayKey);
+      const feedingMinutes = feedingToday.reduce((sum, entry) => sum + (entry.durationMinutes || 0), 0);
+      document.getElementById("feedingCountToday").textContent = String(feedingToday.length);
+      document.getElementById("feedingMinutesToday").textContent = String(feedingMinutes);
+
+      const feedingDays = groupedFeedingDays();
+      const feedingRows = document.getElementById("feedingDailyRows");
+      feedingRows.innerHTML = feedingDays.map((day) => {
+        const average = day.withDuration > 0 ? `${Math.round(day.minutes / day.withDuration)} min` : "—";
+        return `
+          <tr>
+            <td>${controlDayLabel(day.key)}</td>
+            <td>${day.count}</td>
+            <td>${day.minutes || "—"}</td>
+            <td>${average}</td>
+          </tr>
+        `;
+      }).join("");
+      document.getElementById("feedingEmpty").hidden = feedingDays.length > 0;
+      document.getElementById("feedingDailyWrap").hidden = feedingDays.length === 0;
+    }
+
+    async function handleDiaperSubmit(event) {
+      event.preventDefault();
+      const timestamp = fromBuenosAiresInput(document.getElementById("diaperTime").value);
+      if (!Number.isFinite(timestamp)) {
+        setInlineStatus("diaperStatus", "Elegí una hora válida.", true);
+        return;
+      }
+      if (!diaperDraft.pee && !diaperDraft.poop) {
+        setInlineStatus("diaperStatus", "Marcá pis, caca o ambas.", true);
+        return;
+      }
+
+      const photoFile = document.getElementById("diaperPhoto").files[0];
+      let photo = "";
+      if (photoFile) {
+        try {
+          photo = await compactControlPhoto(photoFile);
+        } catch {
+          setInlineStatus("diaperStatus", "No pude leer la foto, pero guardo el pañal igual.", true);
+        }
+      }
+      const entry = {
+        id: makeId(),
+        timestamp,
+        pee: diaperDraft.pee,
+        poop: diaperDraft.poop,
+        photo
+      };
+
+      diaperEntries.push(entry);
+      try {
+        saveDiaperEntries();
+        setInlineStatus("diaperStatus", "Pañal guardado.");
+      } catch {
+        entry.photo = "";
+        saveDiaperEntries();
+        setInlineStatus("diaperStatus", "Pañal guardado sin foto para cuidar espacio.", true);
+      }
+
+      diaperDraft.pee = false;
+      diaperDraft.poop = false;
+      document.getElementById("diaperPhoto").value = "";
+      document.getElementById("diaperTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      renderControl();
+    }
+
+    function handleFeedingSubmit(event) {
+      event.preventDefault();
+      const timestamp = fromBuenosAiresInput(document.getElementById("feedingTime").value);
+      const durationValue = document.getElementById("feedingDuration").value;
+      const durationMinutes = durationValue === "" ? null : Math.max(0, Math.round(Number(durationValue)));
+
+      if (!Number.isFinite(timestamp)) {
+        setInlineStatus("feedingStatus", "Elegí una hora válida.", true);
+        return;
+      }
+      if (durationValue !== "" && !Number.isFinite(durationMinutes)) {
+        setInlineStatus("feedingStatus", "La duración tiene que ser un número.", true);
+        return;
+      }
+
+      feedingEntries.push({
+        id: makeId(),
+        timestamp,
+        durationMinutes: durationMinutes || null
+      });
+      saveFeedingEntries();
+      document.getElementById("feedingDuration").value = "";
+      document.getElementById("feedingTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      setInlineStatus("feedingStatus", "Toma guardada.");
+      renderControl();
     }
 
     function openContractionEditor(id) {
@@ -3851,6 +4374,9 @@
     }
 
     let contractions = loadContractions();
+    let diaperEntries = loadDiaperEntries();
+    let feedingEntries = loadFeedingEntries();
+    const diaperDraft = { pee: false, poop: false };
 
     document.getElementById("contractionButton").addEventListener("click", handleContractionAction);
 
@@ -3928,14 +4454,25 @@
     document.getElementById("shareBirthAssetsWhatsApp").addEventListener("click", () => {
       shareBirthAssetsWhatsApp("birthNewsletterStatus");
     });
+    document.querySelectorAll("[data-diaper-kind]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.diaperKind === "pee" ? "pee" : "poop";
+        diaperDraft[key] = !diaperDraft[key];
+        renderDiaperControls();
+      });
+    });
+    document.getElementById("diaperForm").addEventListener("submit", handleDiaperSubmit);
+    document.getElementById("feedingForm").addEventListener("submit", handleFeedingSubmit);
 
     function showAppView(view) {
-      const activeView = ["countdown", "contractions", "newsletter", "admin"].includes(view) ? view : "countdown";
+      const activeView = ["countdown", "contractions", "control", "newsletter", "admin"].includes(view) ? view : "countdown";
       const showContractions = activeView === "contractions";
+      const showControl = activeView === "control";
       const showNewsletter = activeView === "newsletter";
       const showAdmin = activeView === "admin";
       document.getElementById("countdownView").hidden = activeView !== "countdown";
       document.getElementById("contractionsView").hidden = !showContractions;
+      document.getElementById("controlView").hidden = !showControl;
       document.getElementById("newsletterView").hidden = !showNewsletter;
       document.getElementById("adminView").hidden = !showAdmin;
       document.querySelectorAll(".app-tab").forEach((tab) => {
@@ -3944,6 +4481,7 @@
         tab.setAttribute("aria-selected", String(selected));
       });
       if (showContractions) renderContractions();
+      if (showControl) renderControl();
       if (showAdmin) renderAdminState();
     }
 
@@ -3952,6 +4490,7 @@
         const view = tab.dataset.view;
         const hash = view === "contractions"
           ? "#contracciones"
+          : view === "control" ? "#control"
           : view === "newsletter" ? "#newsletter" : location.pathname + location.search;
         history.replaceState(null, "", hash);
         showAppView(view);
@@ -3961,6 +4500,7 @@
     window.addEventListener("hashchange", () => {
       showAppView(location.hash === "#contracciones"
         ? "contractions"
+        : location.hash === "#control" ? "control"
         : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
     });
 
@@ -3979,6 +4519,7 @@
         renderedDay = currentDay;
         hasCelebrated = false;
         renderToday();
+        renderControl();
       }
     }, 30000);
 
@@ -3993,6 +4534,7 @@
         renderedDay = currentDay;
         syncBabyStatus();
         renderToday();
+        renderControl();
       }
     });
 
@@ -4000,9 +4542,11 @@
     renderAdminState();
     renderToday();
     renderContractions();
+    renderControl();
     syncBabyStatus();
     showAppView(location.hash === "#contracciones"
       ? "contractions"
+      : location.hash === "#control" ? "control"
       : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
   </script>
 </body>
