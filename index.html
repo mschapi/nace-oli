@@ -27,6 +27,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
     body {
@@ -34,6 +35,7 @@
       color: var(--ink);
       background: var(--paper);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
     }
 
     [hidden] {
@@ -69,11 +71,14 @@
       border-bottom: 1px solid var(--line);
       background: rgba(247, 245, 239, 0.96);
       backdrop-filter: blur(14px);
+      max-width: 100%;
+      overflow-x: auto;
     }
 
     .app-tab {
       position: relative;
       appearance: none;
+      flex: 0 0 auto;
       min-width: 104px;
       border: 0;
       background: transparent;
@@ -1083,11 +1088,13 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 18px;
       align-items: start;
+      min-width: 0;
     }
 
     .control-panel {
       display: grid;
       gap: 16px;
+      min-width: 0;
       padding: 20px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -1147,6 +1154,43 @@
       font-weight: 900;
     }
 
+    .control-secondary {
+      appearance: none;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .control-secondary:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .feeding-live {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      border: 1px solid #eadfcf;
+      border-radius: 8px;
+      background: #fffaf0;
+    }
+
+    .feeding-live.active {
+      border-color: var(--leaf);
+      background: #edf6ef;
+    }
+
+    .feeding-timer {
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1;
+      font-weight: 950;
+    }
+
     .control-summary {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1177,6 +1221,9 @@
     }
 
     .control-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
       overflow-x: auto;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -1541,6 +1588,10 @@
     }
 
     @media (max-width: 760px) {
+      .app-tabs {
+        justify-content: flex-start;
+      }
+
       .hero {
         min-height: 92svh;
       }
@@ -2017,14 +2068,19 @@
           </div>
           <form class="control-form" id="feedingForm">
             <label class="edit-field">
-              <span>Hora</span>
-              <input id="feedingTime" type="datetime-local" step="60" required>
+              <span>Hora de inicio</span>
+              <input id="feedingTime" type="datetime-local" step="1" required>
             </label>
+            <div class="feeding-live" aria-live="polite">
+              <p class="contraction-stage" id="feedingStage">Lista para iniciar</p>
+              <div class="feeding-timer" id="feedingTimer">00:00</div>
+              <button class="control-submit" id="feedingActionButton" type="submit">Iniciar toma</button>
+            </div>
             <label class="edit-field">
-              <span>Duración opcional</span>
+              <span>Duración editable</span>
               <input id="feedingDuration" type="number" inputmode="numeric" min="0" step="1" placeholder="Minutos">
             </label>
-            <button class="control-submit" type="submit">Guardar toma</button>
+            <button class="control-secondary" id="updateFeedingDuration" type="button" disabled>Actualizar duración</button>
           </form>
           <p class="announcement-status" id="feedingStatus" aria-live="polite">Guardado en este dispositivo.</p>
           <div class="control-summary" aria-label="Tomas de hoy">
@@ -2049,6 +2105,20 @@
                 </tr>
               </thead>
               <tbody id="feedingDailyRows"></tbody>
+            </table>
+          </div>
+          <p class="control-empty" id="feedingEntryEmpty">Las tomas individuales van a aparecer acá.</p>
+          <div class="control-table-wrap" id="feedingEntryWrap" hidden>
+            <table class="control-table">
+              <thead>
+                <tr>
+                  <th>Inicio</th>
+                  <th>Fin</th>
+                  <th>Duración</th>
+                  <th><span class="sr-only">Editar</span></th>
+                </tr>
+              </thead>
+              <tbody id="feedingEntryRows"></tbody>
             </table>
           </div>
         </section>
@@ -2250,6 +2320,7 @@
     const CONTRACTION_STORAGE_KEY = "nace-oli:contractions:v1";
     const CONTROL_DIAPER_STORAGE_KEY = "nace-oli:control:diapers:v1";
     const CONTROL_FEEDING_STORAGE_KEY = "nace-oli:control:feedings:v1";
+    const CONTROL_ACTIVE_FEEDING_STORAGE_KEY = "nace-oli:control:active-feeding:v1";
     const DEVICE_STORAGE_KEY = "nace-oli:device-id:v1";
     const SUBSCRIPTION_STORAGE_KEY = "nace-oli:subscription:v1";
     const ADMIN_STORAGE_KEY = "nace-oli:admin:v1";
@@ -2266,6 +2337,9 @@
     const ACTIVE_FEEDING_STORAGE_KEY = IS_TEST_MODE
       ? `${CONTROL_FEEDING_STORAGE_KEY}:test`
       : CONTROL_FEEDING_STORAGE_KEY;
+    const ACTIVE_FEEDING_SESSION_STORAGE_KEY = IS_TEST_MODE
+      ? `${CONTROL_ACTIVE_FEEDING_STORAGE_KEY}:test`
+      : CONTROL_ACTIVE_FEEDING_STORAGE_KEY;
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
@@ -2772,7 +2846,7 @@
 
     function fetchBackendStatus() {
       if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
-        return Promise.resolve({ status: "test", mailEnabled: true, babyStatus: null });
+        return Promise.resolve({ status: "test", mailEnabled: true, babyStatus: null, controlState: null });
       }
 
       return new Promise((resolve) => {
@@ -2891,6 +2965,14 @@
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       return minutes > 0 ? `${minutes} min ${seconds} s` : `${seconds} s`;
+    }
+
+    function formatFeedingSeconds(seconds) {
+      if (!Number.isFinite(seconds)) return "En curso";
+      const safeSeconds = Math.max(0, Math.round(seconds));
+      const minutes = Math.floor(safeSeconds / 60);
+      const remainingSeconds = safeSeconds % 60;
+      return minutes > 0 ? `${minutes} min ${remainingSeconds} s` : `${remainingSeconds} s`;
     }
 
     function formatFrequency(seconds) {
@@ -3074,13 +3156,34 @@
           .map((item) => ({
             id: item.id || makeId(),
             timestamp: Number(item.timestamp),
-            durationMinutes: Number.isFinite(item.durationMinutes) && item.durationMinutes > 0
-              ? Number(item.durationMinutes)
-              : null
+            end: Number.isFinite(item.end) ? Number(item.end) : null,
+            durationSeconds: Number.isFinite(item.durationSeconds) && item.durationSeconds >= 0
+              ? Number(item.durationSeconds)
+              : Number.isFinite(item.durationMinutes) && item.durationMinutes > 0
+                ? Number(item.durationMinutes) * 60
+                : Number.isFinite(item.end)
+                  ? Math.max(0, Math.round((Number(item.end) - Number(item.timestamp)) / 1000))
+                  : null,
+            deviceId: item.deviceId || ""
           }))
           .sort((a, b) => a.timestamp - b.timestamp);
       } catch {
         return [];
+      }
+    }
+
+    function loadActiveFeeding() {
+      try {
+        const item = JSON.parse(localStorage.getItem(ACTIVE_FEEDING_SESSION_STORAGE_KEY) || "null");
+        if (!item || !Number.isFinite(item.timestamp)) return null;
+        return {
+          id: item.id || makeId(),
+          timestamp: Number(item.timestamp),
+          deviceId: item.deviceId || "",
+          startedAt: item.startedAt || new Date(Number(item.timestamp)).toISOString()
+        };
+      } catch {
+        return null;
       }
     }
 
@@ -3092,6 +3195,101 @@
     function saveFeedingEntries() {
       feedingEntries.sort((a, b) => a.timestamp - b.timestamp);
       localStorage.setItem(ACTIVE_FEEDING_STORAGE_KEY, JSON.stringify(feedingEntries));
+    }
+
+    function saveActiveFeeding() {
+      if (activeFeeding) {
+        localStorage.setItem(ACTIVE_FEEDING_SESSION_STORAGE_KEY, JSON.stringify(activeFeeding));
+      } else {
+        localStorage.removeItem(ACTIVE_FEEDING_SESSION_STORAGE_KEY);
+      }
+    }
+
+    function controlStateSnapshot() {
+      return {
+        updatedAt: new Date().toISOString(),
+        diapers: diaperEntries.map((entry) => ({
+          id: entry.id,
+          timestamp: entry.timestamp,
+          pee: entry.pee,
+          poop: entry.poop,
+          hasPhoto: Boolean(entry.photo)
+        })),
+        feedings: feedingEntries,
+        activeFeeding
+      };
+    }
+
+    function mergeById(localItems, remoteItems) {
+      const items = new Map();
+      [...localItems, ...remoteItems].forEach((item) => {
+        if (!item || !item.id) return;
+        const existing = items.get(item.id);
+        items.set(item.id, existing && existing.photo && !item.photo
+          ? { ...item, photo: existing.photo }
+          : item);
+      });
+      return Array.from(items.values());
+    }
+
+    function applyControlState(state) {
+      if (!state || typeof state !== "object") return false;
+      let changed = false;
+      if (Array.isArray(state.diapers)) {
+        const before = JSON.stringify(diaperEntries);
+        const merged = mergeById(diaperEntries, state.diapers).filter((item) => item && Number.isFinite(item.timestamp));
+        if (JSON.stringify(merged) !== before) changed = true;
+        diaperEntries = merged;
+      }
+      if (Array.isArray(state.feedings)) {
+        const before = JSON.stringify(feedingEntries);
+        const merged = mergeById(feedingEntries, state.feedings)
+          .filter((item) => item && Number.isFinite(item.timestamp))
+          .map((item) => ({
+            ...item,
+            end: Number.isFinite(item.end) ? Number(item.end) : null,
+            durationSeconds: Number.isFinite(item.durationSeconds) ? Number(item.durationSeconds) : null
+          }));
+        if (JSON.stringify(merged) !== before) changed = true;
+        feedingEntries = merged;
+      }
+      if (state.activeFeeding && Number.isFinite(state.activeFeeding.timestamp)) {
+        if (!activeFeeding || activeFeeding.id !== state.activeFeeding.id) changed = true;
+        activeFeeding = {
+          id: state.activeFeeding.id || makeId(),
+          timestamp: Number(state.activeFeeding.timestamp),
+          deviceId: state.activeFeeding.deviceId || "",
+          startedAt: state.activeFeeding.startedAt || new Date(Number(state.activeFeeding.timestamp)).toISOString()
+        };
+      } else if (activeFeeding && Object.prototype.hasOwnProperty.call(state, "activeFeeding")) {
+        activeFeeding = null;
+        changed = true;
+      }
+      saveDiaperEntries();
+      saveFeedingEntries();
+      saveActiveFeeding();
+      return changed;
+    }
+
+    async function syncControlState(statusElementId = null, message = "Sincronizado") {
+      saveDiaperEntries();
+      saveFeedingEntries();
+      saveActiveFeeding();
+      await sendOliEvent(
+        "control-state",
+        { controlState: controlStateSnapshot() },
+        statusElementId,
+        message,
+        { sendingMessage: "Guardado acá · sincronizando..." }
+      );
+    }
+
+    function pullControlState() {
+      return fetchBackendStatus().then((payload) => {
+        if (payload && payload.controlState && applyControlState(payload.controlState)) {
+          renderControl();
+        }
+      }).catch(() => {});
     }
 
     function resetControlTimes() {
@@ -3136,11 +3334,11 @@
       const days = new Map();
       feedingEntries.forEach((entry) => {
         const key = controlDayKey(entry.timestamp);
-        if (!days.has(key)) days.set(key, { key, count: 0, minutes: 0, withDuration: 0 });
+        if (!days.has(key)) days.set(key, { key, count: 0, seconds: 0, withDuration: 0 });
         const day = days.get(key);
         day.count += 1;
-        if (Number.isFinite(entry.durationMinutes)) {
-          day.minutes += entry.durationMinutes;
+        if (Number.isFinite(entry.durationSeconds)) {
+          day.seconds += entry.durationSeconds;
           day.withDuration += 1;
         }
       });
@@ -3155,9 +3353,30 @@
       });
     }
 
+    function renderFeedingLive() {
+      const live = document.querySelector(".feeding-live");
+      const stage = document.getElementById("feedingStage");
+      const timer = document.getElementById("feedingTimer");
+      const button = document.getElementById("feedingActionButton");
+      const timeInput = document.getElementById("feedingTime");
+      live.classList.toggle("active", Boolean(activeFeeding));
+      if (activeFeeding) {
+        stage.textContent = "Toma en curso";
+        timer.textContent = formatElapsed(Date.now() - activeFeeding.timestamp).slice(0, 5);
+        button.textContent = "Finalizar toma";
+        timeInput.disabled = true;
+      } else {
+        stage.textContent = "Lista para iniciar";
+        timer.textContent = "00:00";
+        button.textContent = "Iniciar toma";
+        timeInput.disabled = false;
+      }
+    }
+
     function renderControl() {
       resetControlTimes();
       renderDiaperControls();
+      renderFeedingLive();
 
       const todayKey = controlDayKey(Date.now());
       const diaperToday = diaperEntries.filter((entry) => controlDayKey(entry.timestamp) === todayKey);
@@ -3179,25 +3398,43 @@
       document.getElementById("diaperDailyWrap").hidden = diaperDays.length === 0;
 
       const feedingToday = feedingEntries.filter((entry) => controlDayKey(entry.timestamp) === todayKey);
-      const feedingMinutes = feedingToday.reduce((sum, entry) => sum + (entry.durationMinutes || 0), 0);
+      const feedingMinutes = Math.round(feedingToday.reduce((sum, entry) => sum + (entry.durationSeconds || 0), 0) / 60);
       document.getElementById("feedingCountToday").textContent = String(feedingToday.length);
       document.getElementById("feedingMinutesToday").textContent = String(feedingMinutes);
 
       const feedingDays = groupedFeedingDays();
       const feedingRows = document.getElementById("feedingDailyRows");
       feedingRows.innerHTML = feedingDays.map((day) => {
-        const average = day.withDuration > 0 ? `${Math.round(day.minutes / day.withDuration)} min` : "—";
+        const minutes = Math.round(day.seconds / 60);
+        const average = day.withDuration > 0 ? `${Math.round(minutes / day.withDuration)} min` : "—";
         return `
           <tr>
             <td>${controlDayLabel(day.key)}</td>
             <td>${day.count}</td>
-            <td>${day.minutes || "—"}</td>
+            <td>${minutes || "—"}</td>
             <td>${average}</td>
           </tr>
         `;
       }).join("");
       document.getElementById("feedingEmpty").hidden = feedingDays.length > 0;
       document.getElementById("feedingDailyWrap").hidden = feedingDays.length === 0;
+
+      const entryRows = document.getElementById("feedingEntryRows");
+      const recentFeedings = [...feedingEntries].sort((a, b) => b.timestamp - a.timestamp).slice(0, 12);
+      if (selectedFeedingId && !feedingEntries.some((entry) => entry.id === selectedFeedingId)) {
+        selectedFeedingId = null;
+      }
+      entryRows.innerHTML = recentFeedings.map((entry) => `
+        <tr>
+          <td class="time-cell">${timeCell(entry.timestamp)}</td>
+          <td class="time-cell">${timeCell(entry.end)}</td>
+          <td>${formatFeedingSeconds(entry.durationSeconds)}</td>
+          <td><button class="edit-contraction" type="button" data-edit-feeding="${entry.id}">Editar</button></td>
+        </tr>
+      `).join("");
+      document.getElementById("feedingEntryEmpty").hidden = recentFeedings.length > 0;
+      document.getElementById("feedingEntryWrap").hidden = recentFeedings.length === 0;
+      document.getElementById("updateFeedingDuration").disabled = !selectedFeedingId;
     }
 
     async function handleDiaperSubmit(event) {
@@ -3244,32 +3481,75 @@
       document.getElementById("diaperPhoto").value = "";
       document.getElementById("diaperTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
       renderControl();
+      await syncControlState("diaperStatus", "Pañal guardado y sincronizado.");
     }
 
-    function handleFeedingSubmit(event) {
+    async function handleFeedingSubmit(event) {
       event.preventDefault();
-      const timestamp = fromBuenosAiresInput(document.getElementById("feedingTime").value);
-      const durationValue = document.getElementById("feedingDuration").value;
-      const durationMinutes = durationValue === "" ? null : Math.max(0, Math.round(Number(durationValue)));
-
-      if (!Number.isFinite(timestamp)) {
-        setInlineStatus("feedingStatus", "Elegí una hora válida.", true);
+      if (!activeFeeding) {
+        const timestamp = Date.now();
+        activeFeeding = {
+          id: makeId(),
+          timestamp,
+          deviceId: getDeviceId(),
+          startedAt: new Date(timestamp).toISOString()
+        };
+        selectedFeedingId = null;
+        document.getElementById("feedingTime").value = toBuenosAiresInput(timestamp);
+        document.getElementById("feedingDuration").value = "";
+        setInlineStatus("feedingStatus", "Toma iniciada. Podés finalizarla desde cualquier dispositivo sincronizado.");
+        renderControl();
+        await syncControlState("feedingStatus", "Toma iniciada y sincronizada.");
         return;
       }
-      if (durationValue !== "" && !Number.isFinite(durationMinutes)) {
-        setInlineStatus("feedingStatus", "La duración tiene que ser un número.", true);
-        return;
-      }
 
-      feedingEntries.push({
-        id: makeId(),
-        timestamp,
-        durationMinutes: durationMinutes || null
-      });
-      saveFeedingEntries();
-      document.getElementById("feedingDuration").value = "";
+      const end = Date.now();
+      const finished = {
+        id: activeFeeding.id,
+        timestamp: activeFeeding.timestamp,
+        end,
+        durationSeconds: Math.max(0, Math.round((end - activeFeeding.timestamp) / 1000)),
+        deviceId: activeFeeding.deviceId || getDeviceId()
+      };
+      const existingIndex = feedingEntries.findIndex((entry) => entry.id === finished.id);
+      if (existingIndex >= 0) {
+        feedingEntries[existingIndex] = finished;
+      } else {
+        feedingEntries.push(finished);
+      }
+      selectedFeedingId = finished.id;
+      activeFeeding = null;
+      document.getElementById("feedingDuration").value = String(Math.round(finished.durationSeconds / 60));
       document.getElementById("feedingTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
-      setInlineStatus("feedingStatus", "Toma guardada.");
+      setInlineStatus("feedingStatus", `Toma finalizada: ${formatFeedingSeconds(finished.durationSeconds)}.`);
+      renderControl();
+      await syncControlState("feedingStatus", "Toma finalizada y sincronizada.");
+    }
+
+    async function updateSelectedFeedingDuration() {
+      if (!selectedFeedingId) return;
+      const entry = feedingEntries.find((item) => item.id === selectedFeedingId);
+      if (!entry) return;
+      const minutes = Number(document.getElementById("feedingDuration").value);
+      if (!Number.isFinite(minutes) || minutes < 0) {
+        setInlineStatus("feedingStatus", "La duración tiene que ser un número válido.", true);
+        return;
+      }
+      entry.durationSeconds = Math.round(minutes * 60);
+      entry.end = entry.timestamp + entry.durationSeconds * 1000;
+      setInlineStatus("feedingStatus", "Duración actualizada.");
+      renderControl();
+      await syncControlState("feedingStatus", "Duración actualizada y sincronizada.");
+    }
+
+    function selectFeedingForEdit(id) {
+      const entry = feedingEntries.find((item) => item.id === id);
+      if (!entry) return;
+      selectedFeedingId = entry.id;
+      document.getElementById("feedingDuration").value = Number.isFinite(entry.durationSeconds)
+        ? String(Math.round(entry.durationSeconds / 60))
+        : "";
+      setInlineStatus("feedingStatus", "Editá la duración y tocá Actualizar duración.");
       renderControl();
     }
 
@@ -4376,6 +4656,8 @@
     let contractions = loadContractions();
     let diaperEntries = loadDiaperEntries();
     let feedingEntries = loadFeedingEntries();
+    let activeFeeding = loadActiveFeeding();
+    let selectedFeedingId = null;
     const diaperDraft = { pee: false, poop: false };
 
     document.getElementById("contractionButton").addEventListener("click", handleContractionAction);
@@ -4463,6 +4745,11 @@
     });
     document.getElementById("diaperForm").addEventListener("submit", handleDiaperSubmit);
     document.getElementById("feedingForm").addEventListener("submit", handleFeedingSubmit);
+    document.getElementById("updateFeedingDuration").addEventListener("click", updateSelectedFeedingDuration);
+    document.getElementById("feedingEntryRows").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-edit-feeding]");
+      if (button) selectFeedingForEdit(button.dataset.editFeeding);
+    });
 
     function showAppView(view) {
       const activeView = ["countdown", "contractions", "control", "newsletter", "admin"].includes(view) ? view : "countdown";
@@ -4481,7 +4768,10 @@
         tab.setAttribute("aria-selected", String(selected));
       });
       if (showContractions) renderContractions();
-      if (showControl) renderControl();
+      if (showControl) {
+        renderControl();
+        pullControlState();
+      }
       if (showAdmin) renderAdminState();
     }
 
@@ -4509,6 +4799,7 @@
       if (current) {
         document.getElementById("contractionTimer").textContent = formatElapsed(Date.now() - current.start);
       }
+      if (activeFeeding) renderFeedingLive();
       updateLastHourCount();
     }, 100);
 
@@ -4527,6 +4818,10 @@
       syncBabyStatus();
     }, 45000);
 
+    setInterval(() => {
+      if (!document.getElementById("controlView").hidden) pullControlState();
+    }, 7000);
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         const currentDay = dayKey(new Date());
@@ -4535,6 +4830,7 @@
         syncBabyStatus();
         renderToday();
         renderControl();
+        pullControlState();
       }
     });
 
