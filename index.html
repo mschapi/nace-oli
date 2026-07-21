@@ -1259,6 +1259,44 @@
       border-bottom: 0;
     }
 
+    .control-range-panel {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 14px 34px rgba(23, 33, 27, 0.08);
+    }
+
+    .control-range-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .control-range-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(170px, 1fr)) auto auto auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .control-range-form .control-secondary,
+    .control-range-form .control-submit {
+      min-height: 44px;
+      padding-inline: 14px;
+      white-space: nowrap;
+    }
+
+    .control-range-summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
     .control-empty {
       margin: 0;
       color: var(--muted);
@@ -1986,11 +2024,21 @@
       }
 
       .medical-summary,
+      .control-range-summary,
       .control-grid {
         grid-template-columns: 1fr;
       }
 
       .medical-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .control-range-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .control-range-form {
         grid-template-columns: 1fr;
       }
 
@@ -2413,6 +2461,71 @@
           </div>
         </section>
       </div>
+
+      <section class="control-range-panel" aria-labelledby="controlRangeTitle">
+        <div class="control-range-head">
+          <div>
+            <p class="model-kicker">Consulta</p>
+            <h2 id="controlRangeTitle">Pañales y tomas por rango</h2>
+          </div>
+          <p class="control-empty">Usa todo lo sincronizado entre dispositivos.</p>
+        </div>
+
+        <form class="control-range-form" id="controlRangeForm">
+          <label class="edit-field">
+            <span>Desde</span>
+            <input id="controlRangeFrom" type="date" required>
+          </label>
+          <label class="edit-field">
+            <span>Hasta</span>
+            <input id="controlRangeTo" type="date" required>
+          </label>
+          <button class="control-secondary" type="button" id="controlRangeToday">Hoy</button>
+          <button class="control-secondary" type="button" id="controlRangeYesterday">Ayer</button>
+          <button class="control-submit" type="submit">Consultar</button>
+        </form>
+
+        <div class="control-range-summary" aria-label="Resumen del rango">
+          <div class="control-count">
+            <span>Pis</span>
+            <strong id="rangePeeCount">0</strong>
+          </div>
+          <div class="control-count">
+            <span>Caca</span>
+            <strong id="rangePoopCount">0</strong>
+          </div>
+          <div class="control-count">
+            <span>Pañales</span>
+            <strong id="rangeDiaperCount">0</strong>
+          </div>
+          <div class="control-count">
+            <span>Tomas</span>
+            <strong id="rangeFeedingCount">0</strong>
+          </div>
+          <div class="control-count">
+            <span>Minutos</span>
+            <strong id="rangeFeedingMinutes">0</strong>
+          </div>
+        </div>
+
+        <p class="control-empty" id="rangeEmpty">Elegí un rango para ver el resumen diario.</p>
+        <div class="control-table-wrap" id="rangeDailyWrap" hidden>
+          <table class="control-table">
+            <thead>
+              <tr>
+                <th>Día</th>
+                <th>Pis</th>
+                <th>Caca</th>
+                <th>Pañales</th>
+                <th>Tomas</th>
+                <th>Minutos</th>
+                <th>Promedio toma</th>
+              </tr>
+            </thead>
+            <tbody id="rangeDailyRows"></tbody>
+          </table>
+        </div>
+      </section>
     </main>
   </section>
 
@@ -3585,7 +3698,8 @@
             timestamp: Number(item.timestamp),
             pee: Boolean(item.pee),
             poop: Boolean(item.poop),
-            photo: typeof item.photo === "string" && item.photo.startsWith("data:image/") ? item.photo : ""
+            photo: typeof item.photo === "string" && item.photo.startsWith("data:image/") ? item.photo : "",
+            deviceId: item.deviceId || ""
           }))
           .sort((a, b) => a.timestamp - b.timestamp);
       } catch {
@@ -3659,7 +3773,8 @@
           timestamp: entry.timestamp,
           pee: entry.pee,
           poop: entry.poop,
-          photo: entry.photo || ""
+          photo: entry.photo || "",
+          deviceId: entry.deviceId || ""
         })),
         feedings: feedingEntries,
         activeFeeding
@@ -4203,6 +4318,108 @@
       return Array.from(days.values()).sort((a, b) => b.key.localeCompare(a.key));
     }
 
+    function controlDateKeyFromOffset(offsetDays = 0) {
+      const date = new Date();
+      date.setDate(date.getDate() + offsetDays);
+      return controlDayKey(date.getTime());
+    }
+
+    function resetControlRangeDates() {
+      const today = controlDateKeyFromOffset(0);
+      const from = document.getElementById("controlRangeFrom");
+      const to = document.getElementById("controlRangeTo");
+      if (from && !from.value) from.value = today;
+      if (to && !to.value) to.value = today;
+    }
+
+    function setControlRange(offsetDays) {
+      const key = controlDateKeyFromOffset(offsetDays);
+      document.getElementById("controlRangeFrom").value = key;
+      document.getElementById("controlRangeTo").value = key;
+      renderControlRange();
+    }
+
+    function rangeKeys(fromKey, toKey) {
+      if (!fromKey || !toKey || fromKey > toKey) return [];
+      const keys = [];
+      const current = new Date(`${fromKey}T12:00:00-03:00`);
+      const end = new Date(`${toKey}T12:00:00-03:00`);
+      if (!Number.isFinite(current.getTime()) || !Number.isFinite(end.getTime())) return [];
+      while (current <= end && keys.length < 370) {
+        keys.push(controlDayKey(current.getTime()));
+        current.setDate(current.getDate() + 1);
+      }
+      return keys;
+    }
+
+    function controlRangeRows(fromKey, toKey) {
+      const rows = new Map();
+      rangeKeys(fromKey, toKey).forEach((key) => {
+        rows.set(key, { key, pee: 0, poop: 0, diapers: 0, feedings: 0, seconds: 0, withDuration: 0 });
+      });
+      diaperEntries.forEach((entry) => {
+        const key = controlDayKey(entry.timestamp);
+        if (!rows.has(key)) return;
+        const row = rows.get(key);
+        if (entry.pee) row.pee += 1;
+        if (entry.poop) row.poop += 1;
+        row.diapers += 1;
+      });
+      feedingEntries.forEach((entry) => {
+        const key = controlDayKey(entry.timestamp);
+        if (!rows.has(key)) return;
+        const row = rows.get(key);
+        row.feedings += 1;
+        if (Number.isFinite(entry.durationSeconds)) {
+          row.seconds += entry.durationSeconds;
+          row.withDuration += 1;
+        }
+      });
+      return Array.from(rows.values()).sort((a, b) => b.key.localeCompare(a.key));
+    }
+
+    function renderControlRange() {
+      resetControlRangeDates();
+      const fromKey = document.getElementById("controlRangeFrom").value;
+      const toKey = document.getElementById("controlRangeTo").value;
+      const empty = document.getElementById("rangeEmpty");
+      const wrap = document.getElementById("rangeDailyWrap");
+      const rows = controlRangeRows(fromKey, toKey);
+      const valid = rows.length > 0;
+      const totals = rows.reduce((sum, row) => ({
+        pee: sum.pee + row.pee,
+        poop: sum.poop + row.poop,
+        diapers: sum.diapers + row.diapers,
+        feedings: sum.feedings + row.feedings,
+        seconds: sum.seconds + row.seconds
+      }), { pee: 0, poop: 0, diapers: 0, feedings: 0, seconds: 0 });
+      document.getElementById("rangePeeCount").textContent = String(totals.pee);
+      document.getElementById("rangePoopCount").textContent = String(totals.poop);
+      document.getElementById("rangeDiaperCount").textContent = String(totals.diapers);
+      document.getElementById("rangeFeedingCount").textContent = String(totals.feedings);
+      document.getElementById("rangeFeedingMinutes").textContent = String(Math.round(totals.seconds / 60));
+      document.getElementById("rangeDailyRows").innerHTML = rows.map((row) => {
+        const minutes = Math.round(row.seconds / 60);
+        const average = row.withDuration > 0 ? `${Math.round(minutes / row.withDuration)} min` : "—";
+        return `
+          <tr>
+            <td>${controlDayLabel(row.key)}</td>
+            <td>${row.pee}</td>
+            <td>${row.poop}</td>
+            <td>${row.diapers}</td>
+            <td>${row.feedings}</td>
+            <td>${minutes || "—"}</td>
+            <td>${average}</td>
+          </tr>
+        `;
+      }).join("");
+      empty.hidden = valid;
+      empty.textContent = fromKey > toKey
+        ? "El rango está al revés: revisá desde y hasta."
+        : "No hay registros en ese rango.";
+      wrap.hidden = !valid;
+    }
+
     function renderDiaperControls() {
       document.querySelectorAll("[data-diaper-kind]").forEach((button) => {
         const active = button.dataset.diaperKind === "pee" ? diaperDraft.pee : diaperDraft.poop;
@@ -4233,6 +4450,7 @@
 
     function renderControl() {
       resetControlTimes();
+      resetControlRangeDates();
       renderDiaperControls();
       renderFeedingLive();
 
@@ -4293,6 +4511,7 @@
       document.getElementById("feedingEntryEmpty").hidden = recentFeedings.length > 0;
       document.getElementById("feedingEntryWrap").hidden = recentFeedings.length === 0;
       document.getElementById("updateFeedingDuration").disabled = !selectedFeedingId;
+      renderControlRange();
     }
 
     async function handleDiaperSubmit(event) {
@@ -4321,7 +4540,8 @@
         timestamp,
         pee: diaperDraft.pee,
         poop: diaperDraft.poop,
-        photo
+        photo,
+        deviceId: getDeviceId()
       };
 
       diaperEntries.push(entry);
@@ -5610,6 +5830,12 @@
       const button = event.target.closest("[data-edit-feeding]");
       if (button) selectFeedingForEdit(button.dataset.editFeeding);
     });
+    document.getElementById("controlRangeForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      renderControlRange();
+    });
+    document.getElementById("controlRangeToday").addEventListener("click", () => setControlRange(0));
+    document.getElementById("controlRangeYesterday").addEventListener("click", () => setControlRange(-1));
     document.getElementById("medicalConsultForm").addEventListener("submit", handleMedicalConsultSubmit);
     document.getElementById("medicalStudyForm").addEventListener("submit", handleMedicalStudySubmit);
     document.getElementById("medicalFilters").addEventListener("click", (event) => {
