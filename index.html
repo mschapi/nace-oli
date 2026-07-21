@@ -3213,7 +3213,7 @@
           timestamp: entry.timestamp,
           pee: entry.pee,
           poop: entry.poop,
-          hasPhoto: Boolean(entry.photo)
+          photo: entry.photo || ""
         })),
         feedings: feedingEntries,
         activeFeeding
