@@ -1385,6 +1385,58 @@
       background: #fff;
     }
 
+    .medical-extra-panel {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(92, 134, 102, 0.28);
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
+    .medical-extra-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .medical-extra-head span {
+      color: var(--ink);
+      font-size: 0.85rem;
+      font-weight: 900;
+    }
+
+    .medical-extra-head small {
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .medical-extra-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .medical-extra-grid:empty::before {
+      content: "Escribí Pediatra, Oftalmólogo, Dermatólogo u otra especialidad.";
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .medical-extra-grid .edit-field {
+      gap: 5px;
+    }
+
+    .medical-extra-grid input {
+      min-height: 40px;
+      font-size: 0.86rem;
+    }
+
     .medical-history {
       margin-top: 18px;
     }
@@ -1460,6 +1512,31 @@
       color: var(--ink);
     }
 
+    .medical-structured-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .medical-structured-item {
+      min-width: 0;
+      padding: 8px 9px;
+      border: 1px solid rgba(92, 134, 102, 0.22);
+      border-radius: 6px;
+      background: #f7fbf8;
+      color: var(--ink);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .medical-structured-item strong {
+      display: block;
+      color: var(--leaf);
+      font-size: 0.68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
     .medical-badge {
       flex: 0 0 auto;
       padding: 5px 9px;
@@ -1496,6 +1573,50 @@
     .attachment-button:hover {
       border-color: var(--leaf);
       color: var(--leaf);
+    }
+
+    .medical-ocr-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .medical-ocr-pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #eef4ff;
+      color: #244675;
+      font-size: 0.72rem;
+      font-weight: 850;
+    }
+
+    .medical-ocr-block {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .medical-ocr-block h3 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .medical-ocr-text {
+      max-height: 220px;
+      margin: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: var(--ink);
+      background: #fafaf7;
+      font: 0.78rem/1.45 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
     }
 
     .medical-preview-dialog {
@@ -2030,6 +2151,20 @@
       }
 
       .medical-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .medical-extra-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .medical-extra-head small {
+        text-align: left;
+      }
+
+      .medical-extra-grid,
+      .medical-structured-list {
         grid-template-columns: 1fr;
       }
 
@@ -2586,12 +2721,19 @@
             </label>
             <label class="edit-field">
               <span>Resumen</span>
-              <textarea id="medicalConsultSummary" placeholder="Peso, indicaciones, dudas, próximo control..." required></textarea>
+              <textarea id="medicalConsultSummary" placeholder="Motivo, indicaciones, dudas o próximo control..."></textarea>
             </label>
+            <section class="medical-extra-panel" aria-labelledby="medicalStructuredTitle">
+              <div class="medical-extra-head">
+                <span id="medicalStructuredTitle">Datos sugeridos</span>
+                <small id="medicalStructuredHint">Elegí una especialidad para ver campos útiles.</small>
+              </div>
+              <div class="medical-extra-grid" id="medicalConsultStructuredFields"></div>
+            </section>
             <label class="edit-field birth-file">
               <span>Adjuntos opcionales</span>
               <input id="medicalConsultFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
-              <p class="birth-hint">Fotos, recetas, PDFs o documentos. Máximo 4 archivos de 4 MB por carga.</p>
+              <p class="birth-hint">Fotos, recetas, PDFs o documentos. En imágenes intentamos OCR local y guardamos el texto detectado.</p>
             </label>
             <button class="control-submit" type="submit">Guardar consulta</button>
           </form>
@@ -2629,7 +2771,7 @@
             <label class="edit-field birth-file">
               <span>Adjuntos opcionales</span>
               <input id="medicalStudyFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
-              <p class="birth-hint">Al subirlos quedan disponibles para abrir o descargar desde cualquier dispositivo.</p>
+              <p class="birth-hint">Al subirlos quedan disponibles para abrir o descargar. En imágenes intentamos clasificar y digitalizar el contenido.</p>
             </label>
             <button class="control-submit" type="submit">Guardar registro</button>
           </form>
@@ -2891,6 +3033,7 @@
       : MEDICAL_RECORDS_STORAGE_KEY;
     const MEDICAL_ATTACHMENT_MAX_FILES = 4;
     const MEDICAL_ATTACHMENT_MAX_BYTES = 4 * 1024 * 1024;
+    const TESSERACT_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
     const MEDICAL_TYPE_LABELS = {
       consulta: "Consulta",
       vacunacion: "Vacunación",
@@ -2898,6 +3041,92 @@
       imagen: "Imagen",
       informe: "Informe",
       otro: "Otro"
+    };
+    const MEDICAL_DEFAULT_FIELDS = [
+      { id: "motivo", label: "Motivo", placeholder: "Control, consulta, seguimiento..." },
+      { id: "hallazgos", label: "Hallazgos", placeholder: "Lo más importante del examen" },
+      { id: "indicaciones", label: "Indicaciones", placeholder: "Qué hacer / medicación / cuidados" },
+      { id: "proximo_control", label: "Próximo control", placeholder: "Fecha o recomendación" }
+    ];
+    const MEDICAL_SPECIALTY_FIELDS = {
+      pediatra: [
+        { id: "peso", label: "Peso", placeholder: "3,250 kg" },
+        { id: "talla", label: "Talla", placeholder: "50 cm" },
+        { id: "perimetro_cefalico", label: "Perímetro cefálico", placeholder: "34 cm" },
+        { id: "alimentacion", label: "Alimentación", placeholder: "Teta, mamadera, mixta" },
+        { id: "panales", label: "Pañales", placeholder: "Pis / caca / observaciones" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Vitamina D, cuidados..." },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Fecha o semana sugerida" }
+      ],
+      oftalmologo: [
+        { id: "motivo", label: "Motivo", placeholder: "Control, secreción, lagrimeo..." },
+        { id: "ojo", label: "Ojo", placeholder: "Derecho, izquierdo o ambos" },
+        { id: "reflejo_rojo", label: "Reflejo rojo", placeholder: "Normal / controlar" },
+        { id: "fondo_de_ojo", label: "Fondo de ojo", placeholder: "Hallazgos si aplica" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Gotas, higiene, alarma..." },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      dermatologo: [
+        { id: "zona", label: "Zona", placeholder: "Cara, cuello, pañal..." },
+        { id: "lesion", label: "Lesión", placeholder: "Tipo, color, tamaño" },
+        { id: "evolucion", label: "Evolución", placeholder: "Desde cuándo / cambios" },
+        { id: "tratamiento", label: "Tratamiento", placeholder: "Crema, baño, cuidados" },
+        { id: "alarmas", label: "Signos de alarma", placeholder: "Cuándo consultar" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Si corresponde" }
+      ],
+      cardiologo: [
+        { id: "motivo", label: "Motivo", placeholder: "Soplo, control, derivación..." },
+        { id: "frecuencia", label: "Frecuencia cardíaca", placeholder: "lpm" },
+        { id: "saturacion", label: "Saturación", placeholder: "SpO2" },
+        { id: "ecg_eco", label: "ECG / Eco", placeholder: "Resultado resumido" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Seguimiento / alarmas" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      neurologo: [
+        { id: "motivo", label: "Motivo", placeholder: "Control, tono, sueño..." },
+        { id: "tono", label: "Tono", placeholder: "Normal / observaciones" },
+        { id: "reflejos", label: "Reflejos", placeholder: "Succión, Moro, otros" },
+        { id: "desarrollo", label: "Desarrollo", placeholder: "Hitos u observaciones" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Seguimiento / ejercicios" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      otorrino: [
+        { id: "motivo", label: "Motivo", placeholder: "Audición, congestión, control..." },
+        { id: "oido", label: "Oído", placeholder: "Derecho, izquierdo o ambos" },
+        { id: "audicion", label: "Audición", placeholder: "OEA / estudio / hallazgo" },
+        { id: "nariz_garganta", label: "Nariz / garganta", placeholder: "Observaciones" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Higiene, medicación, alarma" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      traumatologo: [
+        { id: "motivo", label: "Motivo", placeholder: "Cadera, pie, postura..." },
+        { id: "zona", label: "Zona", placeholder: "Cadera, columna, pierna..." },
+        { id: "movilidad", label: "Movilidad", placeholder: "Hallazgos del examen" },
+        { id: "estudio", label: "Estudio", placeholder: "Eco / RX si aplica" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Ejercicios / control" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      gastroenterologo: [
+        { id: "motivo", label: "Motivo", placeholder: "Reflujo, cólicos, caca..." },
+        { id: "peso", label: "Peso", placeholder: "Peso actual si lo midieron" },
+        { id: "alimentacion", label: "Alimentación", placeholder: "Teta, fórmula, mixta" },
+        { id: "deposiciones", label: "Deposiciones", placeholder: "Frecuencia / color / consistencia" },
+        { id: "tratamiento", label: "Tratamiento", placeholder: "Medicación o cambios" },
+        { id: "proximo_control", label: "Próximo control", placeholder: "Cuándo volver" }
+      ],
+      vacunatorio: [
+        { id: "vacuna", label: "Vacuna", placeholder: "Nombre" },
+        { id: "dosis", label: "Dosis", placeholder: "1ra, 2da, refuerzo..." },
+        { id: "lote", label: "Lote", placeholder: "Si figura en carnet" },
+        { id: "reaccion", label: "Reacción esperada", placeholder: "Fiebre, dolor, cuidados" },
+        { id: "proxima_dosis", label: "Próxima dosis", placeholder: "Fecha o edad" }
+      ],
+      laboratorio: [
+        { id: "estudio", label: "Estudio", placeholder: "Hemograma, orina, bilirrubina..." },
+        { id: "resultado_clave", label: "Resultado clave", placeholder: "Valor importante" },
+        { id: "observaciones", label: "Observaciones", placeholder: "Notas del laboratorio" },
+        { id: "indicaciones", label: "Indicaciones", placeholder: "Qué dijo el médico" }
+      ]
     };
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
@@ -3863,12 +4092,184 @@
       })[character]);
     }
 
+    function normalizeMedicalKey(value) {
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    function medicalFieldsForSpecialist(value) {
+      const key = normalizeMedicalKey(value);
+      if (!key) return [];
+      if (MEDICAL_SPECIALTY_FIELDS[key]) return MEDICAL_SPECIALTY_FIELDS[key];
+      if (key.includes("pediatr")) return MEDICAL_SPECIALTY_FIELDS.pediatra;
+      if (key.includes("oftal")) return MEDICAL_SPECIALTY_FIELDS.oftalmologo;
+      if (key.includes("dermat")) return MEDICAL_SPECIALTY_FIELDS.dermatologo;
+      if (key.includes("cardio")) return MEDICAL_SPECIALTY_FIELDS.cardiologo;
+      if (key.includes("neuro")) return MEDICAL_SPECIALTY_FIELDS.neurologo;
+      if (key.includes("otorr") || key.includes("orl")) return MEDICAL_SPECIALTY_FIELDS.otorrino;
+      if (key.includes("trauma") || key.includes("ortop")) return MEDICAL_SPECIALTY_FIELDS.traumatologo;
+      if (key.includes("gastro")) return MEDICAL_SPECIALTY_FIELDS.gastroenterologo;
+      if (key.includes("vacun")) return MEDICAL_SPECIALTY_FIELDS.vacunatorio;
+      if (key.includes("lab")) return MEDICAL_SPECIALTY_FIELDS.laboratorio;
+      return MEDICAL_DEFAULT_FIELDS;
+    }
+
+    function normalizeStructuredFields(fields) {
+      if (!Array.isArray(fields)) return [];
+      return fields.map((field) => {
+        if (!field || typeof field !== "object") return null;
+        const value = String(field.value || "").trim();
+        if (!value) return null;
+        return {
+          id: normalizeMedicalKey(field.id || field.label || "dato").slice(0, 80) || makeId(),
+          label: String(field.label || "Dato").slice(0, 80),
+          value: value.slice(0, 500)
+        };
+      }).filter(Boolean);
+    }
+
+    function renderMedicalStructuredFields() {
+      const input = document.getElementById("medicalConsultSpecialist");
+      const container = document.getElementById("medicalConsultStructuredFields");
+      const hint = document.getElementById("medicalStructuredHint");
+      if (!input || !container) return;
+      const fields = medicalFieldsForSpecialist(input.value);
+      container.innerHTML = fields.map((field) => `
+        <label class="edit-field">
+          <span>${escapeHtml(field.label)}</span>
+          <input type="text" data-medical-structured-field="${escapeHtml(field.id)}" data-medical-structured-label="${escapeHtml(field.label)}" placeholder="${escapeHtml(field.placeholder || "")}">
+        </label>
+      `).join("");
+      if (hint) {
+        hint.textContent = fields.length
+          ? `${fields.length} campos opcionales para ${input.value.trim() || "esta especialidad"}.`
+          : "Elegí una especialidad para ver campos útiles.";
+      }
+    }
+
+    function collectMedicalStructuredFields() {
+      return normalizeStructuredFields(Array.from(document.querySelectorAll("[data-medical-structured-field]")).map((input) => ({
+        id: input.dataset.medicalStructuredField,
+        label: input.dataset.medicalStructuredLabel,
+        value: input.value
+      })));
+    }
+
+    function renderMedicalStructuredList(fields) {
+      const normalized = normalizeStructuredFields(fields);
+      if (!normalized.length) return "";
+      return `<div class="medical-structured-list">${normalized.map((field) => `
+        <div class="medical-structured-item">
+          <strong>${escapeHtml(field.label)}</strong>
+          <span>${escapeHtml(field.value)}</span>
+        </div>
+      `).join("")}</div>`;
+    }
+
+    function medicalDocumentTypeFromText(text, filename = "") {
+      const source = normalizeMedicalKey(`${filename} ${text}`);
+      if (!source.trim()) return "Sin clasificar";
+      if (/receta|recetario|prescripcion|medicamento|farmacia|indicacion/.test(source)) return "Recetario";
+      if (/laboratorio|hemograma|orina|sangre|bilirrubina|glucosa|analisis|resultado/.test(source)) return "Resultado de análisis";
+      if (/ecografia|radiografia|resonancia|tomografia|imagen|rx|eco/.test(source)) return "Estudio por imágenes";
+      if (/vacuna|vacunacion|inmunizacion|lote|dosis/.test(source)) return "Vacunación";
+      if (/orden|derivacion|solicitud|pedido/.test(source)) return "Orden médica";
+      if (/certificado|constancia|apto/.test(source)) return "Certificado";
+      if (/informe|diagnostico|evolucion/.test(source)) return "Informe médico";
+      return "Documento médico";
+    }
+
+    let tesseractLoadPromise = null;
+    let medicalOcrWorkerPromise = null;
+
+    function loadTesseract() {
+      if (window.Tesseract) return Promise.resolve(window.Tesseract);
+      if (!tesseractLoadPromise) {
+        tesseractLoadPromise = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = TESSERACT_SCRIPT_URL;
+          script.async = true;
+          script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("No se pudo iniciar el OCR."));
+          script.onerror = () => reject(new Error("No se pudo cargar el OCR."));
+          document.head.appendChild(script);
+        });
+      }
+      return tesseractLoadPromise;
+    }
+
+    function getMedicalOcrWorker() {
+      if (!medicalOcrWorkerPromise) {
+        medicalOcrWorkerPromise = loadTesseract().then((Tesseract) => (
+          typeof Tesseract.createWorker === "function" ? Tesseract.createWorker("spa+eng") : null
+        ));
+      }
+      return medicalOcrWorkerPromise;
+    }
+
+    async function recognizeMedicalImage(dataUrl, filename, statusElementId = null) {
+      try {
+        setInlineStatus(statusElementId, `Leyendo texto de ${filename}...`);
+        const worker = await getMedicalOcrWorker();
+        let result;
+        if (worker && typeof worker.recognize === "function") {
+          result = await worker.recognize(dataUrl);
+        } else {
+          const Tesseract = await loadTesseract();
+          result = await Tesseract.recognize(dataUrl, "spa+eng");
+        }
+        const text = String(result?.data?.text || "").trim().replace(/\n{3,}/g, "\n\n").slice(0, 6000);
+        const confidence = Number.isFinite(result?.data?.confidence) ? Math.round(result.data.confidence) : null;
+        return {
+          ocrStatus: text ? "leido" : "sin_texto",
+          ocrType: medicalDocumentTypeFromText(text, filename),
+          ocrText: text,
+          ocrConfidence: confidence
+        };
+      } catch (error) {
+        medicalOcrWorkerPromise = null;
+        return {
+          ocrStatus: "error",
+          ocrType: medicalDocumentTypeFromText("", filename),
+          ocrText: "",
+          ocrConfidence: null
+        };
+      }
+    }
+
+    function renderAttachmentOcrPill(attachment) {
+      if (!attachment.ocrType && !attachment.ocrText && !attachment.ocrStatus) return "";
+      const label = attachment.ocrType || (attachment.ocrStatus === "sin_texto" ? "Sin texto detectable" : "OCR pendiente");
+      const confidence = Number.isFinite(attachment.ocrConfidence) ? ` · OCR ${attachment.ocrConfidence}%` : "";
+      return `<span class="medical-ocr-pill">${escapeHtml(label)}${escapeHtml(confidence)}</span>`;
+    }
+
+    function renderAttachmentOcrBlock(attachment) {
+      if (!attachment.ocrType && !attachment.ocrText && !attachment.ocrStatus) return "";
+      const label = attachment.ocrType || "Documento";
+      const text = attachment.ocrText || (attachment.ocrStatus === "sin_texto"
+        ? "No se detectó texto legible en la imagen."
+        : "No se pudo digitalizar el adjunto.");
+      const confidence = Number.isFinite(attachment.ocrConfidence) ? ` · confianza ${attachment.ocrConfidence}%` : "";
+      return `
+        <section class="medical-ocr-block" aria-label="Texto digitalizado">
+          <h3>${escapeHtml(label)}${escapeHtml(confidence)}</h3>
+          <pre class="medical-ocr-text">${escapeHtml(text)}</pre>
+        </section>
+      `;
+    }
+
     function normalizeMedicalAttachment(item) {
       if (!item || typeof item !== "object") return null;
       const dataUrl = typeof item.dataUrl === "string" && item.dataUrl.startsWith("data:") ? item.dataUrl : "";
       const previewUrl = typeof item.previewUrl === "string" ? item.previewUrl : "";
       const downloadUrl = typeof item.downloadUrl === "string" ? item.downloadUrl : "";
       const driveFileId = typeof item.driveFileId === "string" ? item.driveFileId : "";
+      const confidence = Number(item.ocrConfidence);
       if (!dataUrl && !previewUrl && !downloadUrl && !driveFileId) return null;
       return {
         id: item.id || makeId(),
@@ -3879,7 +4280,11 @@
         driveFileId,
         previewUrl,
         downloadUrl,
-        addedAt: item.addedAt || new Date().toISOString()
+        addedAt: item.addedAt || new Date().toISOString(),
+        ocrStatus: String(item.ocrStatus || "").slice(0, 40),
+        ocrType: String(item.ocrType || "").slice(0, 80),
+        ocrText: String(item.ocrText || "").slice(0, 6000),
+        ocrConfidence: Number.isFinite(confidence) ? confidence : null
       };
     }
 
@@ -3895,6 +4300,7 @@
         timestamp: Number(item.timestamp),
         specialist: String(item.specialist || "").slice(0, 120),
         summary: String(item.summary || "").slice(0, 2500),
+        structuredFields: normalizeStructuredFields(item.structuredFields),
         attachments,
         deviceId: item.deviceId || "",
         createdAt: item.createdAt || new Date(Number(item.timestamp)).toISOString(),
@@ -3943,6 +4349,7 @@
         updatedAt: new Date().toISOString(),
         records: medicalRecords.map((record) => ({
           ...record,
+          structuredFields: normalizeStructuredFields(record.structuredFields),
           attachments: record.attachments.map((attachment) => ({
             id: attachment.id,
             filename: attachment.filename,
@@ -3952,6 +4359,10 @@
             previewUrl: attachment.previewUrl || "",
             downloadUrl: attachment.downloadUrl || "",
             addedAt: attachment.addedAt || "",
+            ocrStatus: attachment.ocrStatus || "",
+            ocrType: attachment.ocrType || "",
+            ocrText: attachment.ocrText || "",
+            ocrConfidence: Number.isFinite(attachment.ocrConfidence) ? attachment.ocrConfidence : null,
             dataUrl: attachment.driveFileId ? "" : (attachment.dataUrl || "")
           }))
         }))
@@ -3969,6 +4380,12 @@
           merged.dataUrl = "";
         } else if (previous.dataUrl && !normalized.dataUrl) {
           merged.dataUrl = previous.dataUrl;
+        }
+        ["ocrStatus", "ocrType", "ocrText"].forEach((key) => {
+          if (previous[key] && !normalized[key]) merged[key] = previous[key];
+        });
+        if (Number.isFinite(previous.ocrConfidence) && !Number.isFinite(normalized.ocrConfidence)) {
+          merged.ocrConfidence = previous.ocrConfidence;
         }
         if (previous.driveFileId && !normalized.driveFileId) {
           merged.driveFileId = previous.driveFileId;
@@ -3991,9 +4408,13 @@
           items.set(normalized.id, normalized);
           return;
         }
+        const structuredFields = normalized.structuredFields.length
+          ? normalized.structuredFields
+          : (previous.structuredFields || []);
         items.set(normalized.id, {
           ...previous,
           ...normalized,
+          structuredFields,
           attachments: mergeMedicalAttachments(previous.attachments, normalized.attachments)
         });
       });
@@ -4048,26 +4469,32 @@
       });
     }
 
-    async function readMedicalAttachments(input) {
+    async function readMedicalAttachments(input, statusElementId = null) {
       const files = Array.from(input.files || []);
       if (files.length > MEDICAL_ATTACHMENT_MAX_FILES) {
         throw new Error(`Máximo ${MEDICAL_ATTACHMENT_MAX_FILES} adjuntos por carga.`);
       }
       const attachments = [];
-      for (const file of files) {
+      for (const [index, file] of files.entries()) {
         if (file.size > MEDICAL_ATTACHMENT_MAX_BYTES) {
           throw new Error(`${file.name} pesa más de 4 MB. Subí una versión más liviana.`);
         }
+        setInlineStatus(statusElementId, `Leyendo adjunto ${index + 1}/${files.length}...`);
+        const dataUrl = await readFileAsDataUrl(file);
+        const ocr = file.type.startsWith("image/")
+          ? await recognizeMedicalImage(dataUrl, file.name || "adjunto", statusElementId)
+          : {};
         attachments.push({
           id: makeId(),
           filename: file.name || "adjunto",
           mimeType: file.type || "application/octet-stream",
           size: file.size,
-          dataUrl: await readFileAsDataUrl(file),
+          dataUrl,
           driveFileId: "",
           previewUrl: "",
           downloadUrl: "",
-          addedAt: new Date().toISOString()
+          addedAt: new Date().toISOString(),
+          ...ocr
         });
       }
       return attachments;
@@ -4134,11 +4561,14 @@
         const specialist = record.specialist
           ? `<span class="medical-specialist">${escapeHtml(record.specialist)}</span>`
           : `<span class="medical-specialist">Sin especialista cargado</span>`;
+        const summary = record.summary ? `<p>${escapeHtml(record.summary)}</p>` : "";
+        const structured = renderMedicalStructuredList(record.structuredFields);
         const attachments = record.attachments.length
           ? `<div class="medical-attachments">${record.attachments.map((attachment) => `
               <button class="attachment-button" type="button" data-medical-record="${escapeHtml(record.id)}" data-medical-attachment="${escapeHtml(attachment.id)}">
                 ${escapeHtml(attachment.filename)}${attachment.size ? ` · ${escapeHtml(prettyFileSize(attachment.size))}` : ""}
               </button>
+              ${renderAttachmentOcrPill(attachment)}
             `).join("")}</div>`
           : "";
         return `
@@ -4151,7 +4581,8 @@
               <span class="medical-badge">${escapeHtml(medicalTypeLabel(record.type))}</span>
             </div>
             ${specialist}
-            <p>${escapeHtml(record.summary)}</p>
+            ${summary}
+            ${structured}
             ${attachments}
           </article>
         `;
@@ -4162,6 +4593,7 @@
       const timestamp = fromBuenosAiresInput(document.getElementById(config.dateId).value);
       const specialist = document.getElementById(config.specialistId).value.trim();
       const summary = document.getElementById(config.summaryId).value.trim();
+      const structuredFields = config.structuredFields ? collectMedicalStructuredFields() : [];
       const fileInput = document.getElementById(config.fileId);
 
       if (!Number.isFinite(timestamp)) {
@@ -4172,15 +4604,15 @@
         setInlineStatus(config.statusId, "Cargá el especialista o escribilo a mano.", true);
         return;
       }
-      if (!summary) {
-        setInlineStatus(config.statusId, "Escribí un resumen breve.", true);
+      if (!summary && !structuredFields.length) {
+        setInlineStatus(config.statusId, "Escribí un resumen breve o completá algún dato sugerido.", true);
         return;
       }
 
       setInlineStatus(config.statusId, fileInput.files.length ? "Leyendo adjuntos..." : "Guardando ficha...");
       let attachments;
       try {
-        attachments = await readMedicalAttachments(fileInput);
+        attachments = await readMedicalAttachments(fileInput, config.statusId);
       } catch (error) {
         setInlineStatus(config.statusId, error.message || "No pude leer los adjuntos.", true);
         return;
@@ -4192,6 +4624,7 @@
         timestamp,
         specialist,
         summary,
+        structuredFields,
         attachments,
         deviceId: getDeviceId(),
         createdAt: new Date().toISOString(),
@@ -4201,6 +4634,7 @@
       saveMedicalRecords();
       document.getElementById(config.formId).reset();
       resetMedicalTimes();
+      renderMedicalStructuredFields();
       renderMedical();
       await syncMedicalState(config.statusId, attachments.length
         ? "Registro guardado. Los adjuntos quedan disponibles desde la web."
@@ -4217,7 +4651,8 @@
         summaryId: "medicalConsultSummary",
         fileId: "medicalConsultFiles",
         statusId: "medicalConsultStatus",
-        requireSpecialist: true
+        requireSpecialist: true,
+        structuredFields: true
       });
     }
 
@@ -4243,14 +4678,15 @@
       const downloadUrl = attachmentDownloadUrl(attachment);
       const title = attachment.filename || "Adjunto";
       const body = document.getElementById("medicalPreviewBody");
+      const ocrBlock = renderAttachmentOcrBlock(attachment);
       document.getElementById("medicalPreviewTitle").textContent = title;
 
       if (url && attachment.mimeType.startsWith("image/")) {
-        body.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(title)}">`;
+        body.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(title)}">${ocrBlock}`;
       } else if (url && (attachment.mimeType === "application/pdf" || attachment.previewUrl)) {
-        body.innerHTML = `<iframe src="${escapeHtml(url)}" title="${escapeHtml(title)}"></iframe>`;
+        body.innerHTML = `<iframe src="${escapeHtml(url)}" title="${escapeHtml(title)}"></iframe>${ocrBlock}`;
       } else {
-        body.innerHTML = `<div class="medical-preview-fallback">Este archivo no tiene previsualización directa en el navegador. Podés abrirlo en otra pestaña o descargarlo.</div>`;
+        body.innerHTML = `<div class="medical-preview-fallback">Este archivo no tiene previsualización directa en el navegador. Podés abrirlo en otra pestaña o descargarlo.</div>${ocrBlock}`;
       }
 
       const download = document.getElementById("medicalPreviewDownload");
@@ -5838,6 +6274,8 @@
     document.getElementById("controlRangeYesterday").addEventListener("click", () => setControlRange(-1));
     document.getElementById("medicalConsultForm").addEventListener("submit", handleMedicalConsultSubmit);
     document.getElementById("medicalStudyForm").addEventListener("submit", handleMedicalStudySubmit);
+    document.getElementById("medicalConsultSpecialist").addEventListener("input", renderMedicalStructuredFields);
+    document.getElementById("medicalConsultSpecialist").addEventListener("change", renderMedicalStructuredFields);
     document.getElementById("medicalFilters").addEventListener("click", (event) => {
       const button = event.target.closest("[data-medical-filter]");
       if (!button) return;
@@ -5876,6 +6314,7 @@
         pullControlState();
       }
       if (showMedical) {
+        renderMedicalStructuredFields();
         renderMedical();
         pullMedicalState();
       }
@@ -5952,6 +6391,7 @@
     renderToday();
     renderContractions();
     renderControl();
+    renderMedicalStructuredFields();
     renderMedical();
     syncBabyStatus();
     showAppView(location.hash === "#contracciones"
