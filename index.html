@@ -1274,6 +1274,277 @@
       background: #ecefe9;
     }
 
+    .medical-view {
+      min-height: calc(100svh - 54px);
+      background: linear-gradient(180deg, #f7fbf7 0%, #fffaf0 50%, #ffffff 100%);
+    }
+
+    .medical-shell {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 48px 0 70px;
+    }
+
+    .medical-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 26px 0 18px;
+    }
+
+    .medical-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .medical-panel,
+    .medical-history {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 14px 34px rgba(23, 33, 27, 0.08);
+    }
+
+    .medical-panel h2,
+    .medical-history h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 1.9rem);
+      letter-spacing: 0;
+    }
+
+    .medical-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .medical-form textarea {
+      min-height: 118px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .medical-form input,
+    .medical-form select,
+    .medical-form textarea {
+      font: inherit;
+    }
+
+    .medical-form select,
+    .edit-field textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .medical-history {
+      margin-top: 18px;
+    }
+
+    .medical-history-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .medical-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .medical-filter button {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .medical-filter button.active {
+      border-color: var(--leaf);
+      background: #e9f3ec;
+      color: var(--leaf);
+    }
+
+    .medical-record-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .medical-card {
+      display: grid;
+      gap: 10px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .medical-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .medical-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .medical-card time,
+    .medical-specialist,
+    .medical-card p {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .medical-card p {
+      margin: 0;
+      color: var(--ink);
+    }
+
+    .medical-badge {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #fff5df;
+      color: #8a5a00;
+      font-size: 0.68rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .medical-attachments {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .attachment-button {
+      min-height: 34px;
+      max-width: 100%;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fafaf7;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 850;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .attachment-button:hover {
+      border-color: var(--leaf);
+      color: var(--leaf);
+    }
+
+    .medical-preview-dialog {
+      width: min(860px, calc(100% - 28px));
+      max-height: calc(100svh - 28px);
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    .medical-preview-dialog::backdrop {
+      background: rgba(23, 33, 27, 0.62);
+    }
+
+    .medical-preview-panel {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .medical-preview-head,
+    .medical-preview-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .medical-preview-head h2 {
+      margin: 0;
+      font-size: 1.12rem;
+      line-height: 1.25;
+    }
+
+    .medical-preview-body {
+      min-height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fafaf7;
+      overflow: hidden;
+    }
+
+    .medical-preview-body img,
+    .medical-preview-body iframe {
+      display: block;
+      width: 100%;
+      min-height: min(68svh, 620px);
+      border: 0;
+      object-fit: contain;
+    }
+
+    .medical-preview-fallback {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    .medical-preview-actions button,
+    .medical-preview-actions a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 850;
+      text-decoration: none;
+    }
+
+    .medical-preview-actions a {
+      border-color: var(--leaf);
+      background: var(--leaf);
+      color: #fff;
+    }
+
     .born-button {
       position: fixed;
       right: max(18px, env(safe-area-inset-right));
@@ -1709,8 +1980,26 @@
         padding: 34px 0 46px;
       }
 
+      .medical-shell {
+        width: min(100% - 28px, 560px);
+        padding: 34px 0 46px;
+      }
+
+      .medical-summary,
       .control-grid {
         grid-template-columns: 1fr;
+      }
+
+      .medical-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .medical-history-head,
+      .medical-card-head,
+      .medical-preview-head,
+      .medical-preview-actions {
+        align-items: stretch;
+        flex-direction: column;
       }
 
       .control-table {
@@ -1817,6 +2106,7 @@
     <button class="app-tab active" role="tab" type="button" data-view="countdown">¿Será hoy?</button>
     <button class="app-tab" role="tab" type="button" data-view="contractions">Contracciones</button>
     <button class="app-tab" role="tab" type="button" data-view="control">Control</button>
+    <button class="app-tab" role="tab" type="button" data-view="medical">Ficha médica</button>
     <button class="app-tab" role="tab" type="button" data-view="newsletter">Newsletter</button>
   </nav>
 
@@ -2126,6 +2416,134 @@
     </main>
   </section>
 
+  <section class="medical-view" id="medicalView" hidden>
+    <main class="medical-shell">
+      <header class="contractions-heading">
+        <p class="contractions-kicker">Pediatría</p>
+        <h1 class="contractions-title">Ficha médica de Oli</h1>
+        <p class="contractions-intro">Consultas, estudios, vacunas y adjuntos en un mismo lugar compartido.</p>
+      </header>
+
+      <div class="medical-summary" aria-label="Resumen médico">
+        <div class="control-count">
+          <span>Consultas</span>
+          <strong id="medicalConsultCount">0</strong>
+        </div>
+        <div class="control-count">
+          <span>Vacunas</span>
+          <strong id="medicalVaccineCount">0</strong>
+        </div>
+        <div class="control-count">
+          <span>Estudios</span>
+          <strong id="medicalStudyCount">0</strong>
+        </div>
+        <div class="control-count">
+          <span>Adjuntos</span>
+          <strong id="medicalAttachmentCount">0</strong>
+        </div>
+      </div>
+
+      <datalist id="medicalSpecialistOptions">
+        <option value="Pediatra"></option>
+        <option value="Oftalmólogo"></option>
+        <option value="Dermatólogo"></option>
+        <option value="Cardiólogo"></option>
+        <option value="Neurólogo"></option>
+        <option value="Otorrino"></option>
+        <option value="Traumatólogo"></option>
+        <option value="Gastroenterólogo"></option>
+        <option value="Vacunatorio"></option>
+        <option value="Laboratorio"></option>
+      </datalist>
+
+      <div class="medical-grid">
+        <section class="medical-panel" aria-labelledby="medicalConsultTitle">
+          <div>
+            <p class="model-kicker">Consultas</p>
+            <h2 id="medicalConsultTitle">Nueva consulta</h2>
+          </div>
+          <form class="medical-form" id="medicalConsultForm">
+            <label class="edit-field">
+              <span>Fecha</span>
+              <input id="medicalConsultDate" type="datetime-local" step="60" required>
+            </label>
+            <label class="edit-field">
+              <span>Especialista</span>
+              <input id="medicalConsultSpecialist" type="text" list="medicalSpecialistOptions" placeholder="Pediatra, oftalmólogo..." required>
+            </label>
+            <label class="edit-field">
+              <span>Resumen</span>
+              <textarea id="medicalConsultSummary" placeholder="Peso, indicaciones, dudas, próximo control..." required></textarea>
+            </label>
+            <label class="edit-field birth-file">
+              <span>Adjuntos opcionales</span>
+              <input id="medicalConsultFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
+              <p class="birth-hint">Fotos, recetas, PDFs o documentos. Máximo 4 archivos de 4 MB por carga.</p>
+            </label>
+            <button class="control-submit" type="submit">Guardar consulta</button>
+          </form>
+          <p class="announcement-status" id="medicalConsultStatus" aria-live="polite">Guardado en este dispositivo y sincronizado cuando haya conexión.</p>
+        </section>
+
+        <section class="medical-panel" aria-labelledby="medicalStudyTitle">
+          <div>
+            <p class="model-kicker">Estudios y vacunas</p>
+            <h2 id="medicalStudyTitle">Nuevo registro</h2>
+          </div>
+          <form class="medical-form" id="medicalStudyForm">
+            <label class="edit-field">
+              <span>Tipo</span>
+              <select id="medicalStudyType" required>
+                <option value="vacunacion">Vacunación</option>
+                <option value="analisis">Resultados de análisis</option>
+                <option value="imagen">Estudio por imágenes</option>
+                <option value="informe">Informe médico</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+            <label class="edit-field">
+              <span>Fecha</span>
+              <input id="medicalStudyDate" type="datetime-local" step="60" required>
+            </label>
+            <label class="edit-field">
+              <span>Especialista o lugar</span>
+              <input id="medicalStudySpecialist" type="text" list="medicalSpecialistOptions" placeholder="Vacunatorio, laboratorio, pediatra...">
+            </label>
+            <label class="edit-field">
+              <span>Resumen</span>
+              <textarea id="medicalStudySummary" placeholder="Vacuna aplicada, resultado, indicación o comentario..." required></textarea>
+            </label>
+            <label class="edit-field birth-file">
+              <span>Adjuntos opcionales</span>
+              <input id="medicalStudyFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
+              <p class="birth-hint">Al subirlos quedan disponibles para abrir o descargar desde cualquier dispositivo.</p>
+            </label>
+            <button class="control-submit" type="submit">Guardar registro</button>
+          </form>
+          <p class="announcement-status" id="medicalStudyStatus" aria-live="polite">Las vacunas y estudios quedan separados en el historial.</p>
+        </section>
+      </div>
+
+      <section class="medical-history" aria-labelledby="medicalHistoryTitle">
+        <div class="medical-history-head">
+          <div>
+            <p class="model-kicker">Historial</p>
+            <h2 id="medicalHistoryTitle">Registros médicos</h2>
+          </div>
+          <div class="medical-filter" id="medicalFilters" aria-label="Filtrar ficha médica">
+            <button class="active" type="button" data-medical-filter="all">Todo</button>
+            <button type="button" data-medical-filter="consulta">Consultas</button>
+            <button type="button" data-medical-filter="vacunacion">Vacunas</button>
+            <button type="button" data-medical-filter="estudios">Estudios</button>
+          </div>
+        </div>
+        <p class="announcement-status" id="medicalSyncStatus" aria-live="polite">Sincronización compartida activada.</p>
+        <p class="control-empty" id="medicalEmpty">La primera consulta o estudio va a aparecer acá.</p>
+        <div class="medical-record-list" id="medicalRecordList"></div>
+      </section>
+    </main>
+  </section>
+
   <section class="announcements-view" id="newsletterView" hidden>
     <main class="announcements-shell">
       <header class="contractions-heading">
@@ -2233,6 +2651,20 @@
     </form>
   </dialog>
 
+  <dialog class="medical-preview-dialog" id="medicalPreviewDialog">
+    <div class="medical-preview-panel">
+      <div class="medical-preview-head">
+        <h2 id="medicalPreviewTitle">Adjunto</h2>
+        <button class="edit-cancel" type="button" id="closeMedicalPreview">Cerrar</button>
+      </div>
+      <div class="medical-preview-body" id="medicalPreviewBody"></div>
+      <div class="medical-preview-actions">
+        <a id="medicalPreviewDownload" href="#" download>Descargar</a>
+        <button type="button" id="openMedicalPreviewNewTab">Abrir en otra pestaña</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog class="birth-dialog" id="birthDialog">
     <div class="birth-panel">
       <div class="birth-copy">
@@ -2321,6 +2753,7 @@
     const CONTROL_DIAPER_STORAGE_KEY = "nace-oli:control:diapers:v1";
     const CONTROL_FEEDING_STORAGE_KEY = "nace-oli:control:feedings:v1";
     const CONTROL_ACTIVE_FEEDING_STORAGE_KEY = "nace-oli:control:active-feeding:v1";
+    const MEDICAL_RECORDS_STORAGE_KEY = "nace-oli:medical:records:v1";
     const DEVICE_STORAGE_KEY = "nace-oli:device-id:v1";
     const SUBSCRIPTION_STORAGE_KEY = "nace-oli:subscription:v1";
     const ADMIN_STORAGE_KEY = "nace-oli:admin:v1";
@@ -2340,6 +2773,19 @@
     const ACTIVE_FEEDING_SESSION_STORAGE_KEY = IS_TEST_MODE
       ? `${CONTROL_ACTIVE_FEEDING_STORAGE_KEY}:test`
       : CONTROL_ACTIVE_FEEDING_STORAGE_KEY;
+    const ACTIVE_MEDICAL_RECORDS_STORAGE_KEY = IS_TEST_MODE
+      ? `${MEDICAL_RECORDS_STORAGE_KEY}:test`
+      : MEDICAL_RECORDS_STORAGE_KEY;
+    const MEDICAL_ATTACHMENT_MAX_FILES = 4;
+    const MEDICAL_ATTACHMENT_MAX_BYTES = 4 * 1024 * 1024;
+    const MEDICAL_TYPE_LABELS = {
+      consulta: "Consulta",
+      vacunacion: "Vacunación",
+      analisis: "Análisis",
+      imagen: "Imagen",
+      informe: "Informe",
+      otro: "Otro"
+    };
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
@@ -2846,7 +3292,7 @@
 
     function fetchBackendStatus() {
       if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
-        return Promise.resolve({ status: "test", mailEnabled: true, babyStatus: null, controlState: null });
+        return Promise.resolve({ status: "test", mailEnabled: true, babyStatus: null, controlState: null, medicalState: null });
       }
 
       return new Promise((resolve) => {
@@ -3290,6 +3736,418 @@
           renderControl();
         }
       }).catch(() => {});
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function normalizeMedicalAttachment(item) {
+      if (!item || typeof item !== "object") return null;
+      const dataUrl = typeof item.dataUrl === "string" && item.dataUrl.startsWith("data:") ? item.dataUrl : "";
+      const previewUrl = typeof item.previewUrl === "string" ? item.previewUrl : "";
+      const downloadUrl = typeof item.downloadUrl === "string" ? item.downloadUrl : "";
+      const driveFileId = typeof item.driveFileId === "string" ? item.driveFileId : "";
+      if (!dataUrl && !previewUrl && !downloadUrl && !driveFileId) return null;
+      return {
+        id: item.id || makeId(),
+        filename: String(item.filename || "adjunto").slice(0, 160),
+        mimeType: String(item.mimeType || "application/octet-stream").slice(0, 120),
+        size: Number.isFinite(item.size) ? Number(item.size) : null,
+        dataUrl: driveFileId ? "" : dataUrl,
+        driveFileId,
+        previewUrl,
+        downloadUrl,
+        addedAt: item.addedAt || new Date().toISOString()
+      };
+    }
+
+    function normalizeMedicalRecord(item) {
+      if (!item || typeof item !== "object" || !Number.isFinite(item.timestamp)) return null;
+      const type = Object.prototype.hasOwnProperty.call(MEDICAL_TYPE_LABELS, item.type) ? item.type : "otro";
+      const attachments = Array.isArray(item.attachments)
+        ? item.attachments.map(normalizeMedicalAttachment).filter(Boolean)
+        : [];
+      return {
+        id: item.id || makeId(),
+        type,
+        timestamp: Number(item.timestamp),
+        specialist: String(item.specialist || "").slice(0, 120),
+        summary: String(item.summary || "").slice(0, 2500),
+        attachments,
+        deviceId: item.deviceId || "",
+        createdAt: item.createdAt || new Date(Number(item.timestamp)).toISOString(),
+        updatedAt: item.updatedAt || item.createdAt || new Date().toISOString()
+      };
+    }
+
+    function loadMedicalRecords() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(ACTIVE_MEDICAL_RECORDS_STORAGE_KEY) || "[]");
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(normalizeMedicalRecord).filter(Boolean).sort((a, b) => a.timestamp - b.timestamp);
+      } catch {
+        return [];
+      }
+    }
+
+    function compactMedicalRecord(record) {
+      return {
+        ...record,
+        attachments: record.attachments.map((attachment) => ({
+          ...attachment,
+          dataUrl: attachment.driveFileId ? "" : attachment.dataUrl
+        }))
+      };
+    }
+
+    function saveMedicalRecords() {
+      medicalRecords.sort((a, b) => a.timestamp - b.timestamp);
+      try {
+        localStorage.setItem(ACTIVE_MEDICAL_RECORDS_STORAGE_KEY, JSON.stringify(medicalRecords.map(compactMedicalRecord)));
+      } catch {
+        const lightRecords = medicalRecords.map((record) => ({
+          ...record,
+          attachments: record.attachments.map((attachment) => ({
+            ...attachment,
+            dataUrl: ""
+          }))
+        }));
+        localStorage.setItem(ACTIVE_MEDICAL_RECORDS_STORAGE_KEY, JSON.stringify(lightRecords));
+      }
+    }
+
+    function medicalStateSnapshot() {
+      return {
+        updatedAt: new Date().toISOString(),
+        records: medicalRecords.map((record) => ({
+          ...record,
+          attachments: record.attachments.map((attachment) => ({
+            id: attachment.id,
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            size: attachment.size,
+            driveFileId: attachment.driveFileId || "",
+            previewUrl: attachment.previewUrl || "",
+            downloadUrl: attachment.downloadUrl || "",
+            addedAt: attachment.addedAt || "",
+            dataUrl: attachment.driveFileId ? "" : (attachment.dataUrl || "")
+          }))
+        }))
+      };
+    }
+
+    function mergeMedicalAttachments(localAttachments, remoteAttachments) {
+      const items = new Map();
+      [...(localAttachments || []), ...(remoteAttachments || [])].forEach((attachment) => {
+        const normalized = normalizeMedicalAttachment(attachment);
+        if (!normalized) return;
+        const previous = items.get(normalized.id) || {};
+        const merged = { ...previous, ...normalized };
+        if (normalized.driveFileId) {
+          merged.dataUrl = "";
+        } else if (previous.dataUrl && !normalized.dataUrl) {
+          merged.dataUrl = previous.dataUrl;
+        }
+        if (previous.driveFileId && !normalized.driveFileId) {
+          merged.driveFileId = previous.driveFileId;
+          merged.previewUrl = previous.previewUrl || merged.previewUrl;
+          merged.downloadUrl = previous.downloadUrl || merged.downloadUrl;
+          merged.dataUrl = "";
+        }
+        items.set(merged.id, merged);
+      });
+      return Array.from(items.values());
+    }
+
+    function mergeMedicalRecords(localRecords, remoteRecords) {
+      const items = new Map();
+      [...(localRecords || []), ...(remoteRecords || [])].forEach((record) => {
+        const normalized = normalizeMedicalRecord(record);
+        if (!normalized) return;
+        const previous = items.get(normalized.id);
+        if (!previous) {
+          items.set(normalized.id, normalized);
+          return;
+        }
+        items.set(normalized.id, {
+          ...previous,
+          ...normalized,
+          attachments: mergeMedicalAttachments(previous.attachments, normalized.attachments)
+        });
+      });
+      return Array.from(items.values()).sort((a, b) => a.timestamp - b.timestamp);
+    }
+
+    function applyMedicalState(state) {
+      if (!state || typeof state !== "object" || !Array.isArray(state.records)) return false;
+      const before = JSON.stringify(medicalRecords);
+      medicalRecords = mergeMedicalRecords(medicalRecords, state.records);
+      const changed = JSON.stringify(medicalRecords) !== before;
+      saveMedicalRecords();
+      return changed;
+    }
+
+    async function syncMedicalState(statusElementId = null, message = "Ficha médica sincronizada.") {
+      saveMedicalRecords();
+      await sendOliEvent(
+        "medical-state",
+        { medicalState: medicalStateSnapshot() },
+        statusElementId,
+        message,
+        { keepalive: false, sendingMessage: "Guardado acá · subiendo ficha médica..." }
+      );
+      if (!IS_TEST_MODE) {
+        window.setTimeout(() => pullMedicalState(), 2500);
+      }
+    }
+
+    function pullMedicalState() {
+      return fetchBackendStatus().then((payload) => {
+        if (payload && payload.medicalState && applyMedicalState(payload.medicalState)) {
+          renderMedical();
+        }
+      }).catch(() => {});
+    }
+
+    function resetMedicalTimes() {
+      const value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      ["medicalConsultDate", "medicalStudyDate"].forEach((id) => {
+        const input = document.getElementById(id);
+        if (input && !input.value) input.value = value;
+      });
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("No pude leer un adjunto."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function readMedicalAttachments(input) {
+      const files = Array.from(input.files || []);
+      if (files.length > MEDICAL_ATTACHMENT_MAX_FILES) {
+        throw new Error(`Máximo ${MEDICAL_ATTACHMENT_MAX_FILES} adjuntos por carga.`);
+      }
+      const attachments = [];
+      for (const file of files) {
+        if (file.size > MEDICAL_ATTACHMENT_MAX_BYTES) {
+          throw new Error(`${file.name} pesa más de 4 MB. Subí una versión más liviana.`);
+        }
+        attachments.push({
+          id: makeId(),
+          filename: file.name || "adjunto",
+          mimeType: file.type || "application/octet-stream",
+          size: file.size,
+          dataUrl: await readFileAsDataUrl(file),
+          driveFileId: "",
+          previewUrl: "",
+          downloadUrl: "",
+          addedAt: new Date().toISOString()
+        });
+      }
+      return attachments;
+    }
+
+    function prettyFileSize(bytes) {
+      if (!Number.isFinite(bytes)) return "";
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
+    }
+
+    function medicalTypeLabel(type) {
+      return MEDICAL_TYPE_LABELS[type] || "Otro";
+    }
+
+    function isMedicalStudy(type) {
+      return !["consulta", "vacunacion"].includes(type);
+    }
+
+    function medicalRecordMatchesFilter(record) {
+      if (medicalFilter === "all") return true;
+      if (medicalFilter === "estudios") return isMedicalStudy(record.type);
+      return record.type === medicalFilter;
+    }
+
+    function medicalDateLabel(timestamp) {
+      if (!Number.isFinite(timestamp)) return "";
+      const date = new Date(timestamp);
+      return `${contractionDate.format(date).replace(".", "")} · ${contractionTime.format(date)} GMT-3`;
+    }
+
+    function attachmentUrl(attachment) {
+      return attachment.previewUrl || attachment.dataUrl || attachment.downloadUrl || "";
+    }
+
+    function attachmentDownloadUrl(attachment) {
+      return attachment.downloadUrl || attachment.dataUrl || attachment.previewUrl || "";
+    }
+
+    function renderMedical() {
+      resetMedicalTimes();
+      const consults = medicalRecords.filter((record) => record.type === "consulta");
+      const vaccines = medicalRecords.filter((record) => record.type === "vacunacion");
+      const studies = medicalRecords.filter((record) => isMedicalStudy(record.type));
+      const attachmentCount = medicalRecords.reduce((sum, record) => sum + record.attachments.length, 0);
+      document.getElementById("medicalConsultCount").textContent = String(consults.length);
+      document.getElementById("medicalVaccineCount").textContent = String(vaccines.length);
+      document.getElementById("medicalStudyCount").textContent = String(studies.length);
+      document.getElementById("medicalAttachmentCount").textContent = String(attachmentCount);
+
+      document.querySelectorAll("[data-medical-filter]").forEach((button) => {
+        const active = button.dataset.medicalFilter === medicalFilter;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+
+      const filtered = medicalRecords
+        .filter(medicalRecordMatchesFilter)
+        .sort((a, b) => b.timestamp - a.timestamp);
+      document.getElementById("medicalEmpty").hidden = filtered.length > 0;
+      const list = document.getElementById("medicalRecordList");
+      list.innerHTML = filtered.map((record) => {
+        const specialist = record.specialist
+          ? `<span class="medical-specialist">${escapeHtml(record.specialist)}</span>`
+          : `<span class="medical-specialist">Sin especialista cargado</span>`;
+        const attachments = record.attachments.length
+          ? `<div class="medical-attachments">${record.attachments.map((attachment) => `
+              <button class="attachment-button" type="button" data-medical-record="${escapeHtml(record.id)}" data-medical-attachment="${escapeHtml(attachment.id)}">
+                ${escapeHtml(attachment.filename)}${attachment.size ? ` · ${escapeHtml(prettyFileSize(attachment.size))}` : ""}
+              </button>
+            `).join("")}</div>`
+          : "";
+        return `
+          <article class="medical-card">
+            <div class="medical-card-head">
+              <div>
+                <h3>${escapeHtml(medicalTypeLabel(record.type))}</h3>
+                <time datetime="${escapeHtml(new Date(record.timestamp).toISOString())}">${escapeHtml(medicalDateLabel(record.timestamp))}</time>
+              </div>
+              <span class="medical-badge">${escapeHtml(medicalTypeLabel(record.type))}</span>
+            </div>
+            ${specialist}
+            <p>${escapeHtml(record.summary)}</p>
+            ${attachments}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function saveMedicalRecordFromForm(config) {
+      const timestamp = fromBuenosAiresInput(document.getElementById(config.dateId).value);
+      const specialist = document.getElementById(config.specialistId).value.trim();
+      const summary = document.getElementById(config.summaryId).value.trim();
+      const fileInput = document.getElementById(config.fileId);
+
+      if (!Number.isFinite(timestamp)) {
+        setInlineStatus(config.statusId, "Elegí una fecha válida.", true);
+        return;
+      }
+      if (config.requireSpecialist && !specialist) {
+        setInlineStatus(config.statusId, "Cargá el especialista o escribilo a mano.", true);
+        return;
+      }
+      if (!summary) {
+        setInlineStatus(config.statusId, "Escribí un resumen breve.", true);
+        return;
+      }
+
+      setInlineStatus(config.statusId, fileInput.files.length ? "Leyendo adjuntos..." : "Guardando ficha...");
+      let attachments;
+      try {
+        attachments = await readMedicalAttachments(fileInput);
+      } catch (error) {
+        setInlineStatus(config.statusId, error.message || "No pude leer los adjuntos.", true);
+        return;
+      }
+
+      medicalRecords.push({
+        id: makeId(),
+        type: config.type,
+        timestamp,
+        specialist,
+        summary,
+        attachments,
+        deviceId: getDeviceId(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      saveMedicalRecords();
+      document.getElementById(config.formId).reset();
+      resetMedicalTimes();
+      renderMedical();
+      await syncMedicalState(config.statusId, attachments.length
+        ? "Registro guardado. Los adjuntos quedan disponibles desde la web."
+        : "Registro guardado y sincronizado.");
+    }
+
+    function handleMedicalConsultSubmit(event) {
+      event.preventDefault();
+      saveMedicalRecordFromForm({
+        formId: "medicalConsultForm",
+        type: "consulta",
+        dateId: "medicalConsultDate",
+        specialistId: "medicalConsultSpecialist",
+        summaryId: "medicalConsultSummary",
+        fileId: "medicalConsultFiles",
+        statusId: "medicalConsultStatus",
+        requireSpecialist: true
+      });
+    }
+
+    function handleMedicalStudySubmit(event) {
+      event.preventDefault();
+      saveMedicalRecordFromForm({
+        formId: "medicalStudyForm",
+        type: document.getElementById("medicalStudyType").value || "otro",
+        dateId: "medicalStudyDate",
+        specialistId: "medicalStudySpecialist",
+        summaryId: "medicalStudySummary",
+        fileId: "medicalStudyFiles",
+        statusId: "medicalStudyStatus",
+        requireSpecialist: false
+      });
+    }
+
+    function openMedicalAttachment(recordId, attachmentId) {
+      const record = medicalRecords.find((item) => item.id === recordId);
+      const attachment = record?.attachments.find((item) => item.id === attachmentId);
+      if (!attachment) return;
+      const url = attachmentUrl(attachment);
+      const downloadUrl = attachmentDownloadUrl(attachment);
+      const title = attachment.filename || "Adjunto";
+      const body = document.getElementById("medicalPreviewBody");
+      document.getElementById("medicalPreviewTitle").textContent = title;
+
+      if (url && attachment.mimeType.startsWith("image/")) {
+        body.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(title)}">`;
+      } else if (url && (attachment.mimeType === "application/pdf" || attachment.previewUrl)) {
+        body.innerHTML = `<iframe src="${escapeHtml(url)}" title="${escapeHtml(title)}"></iframe>`;
+      } else {
+        body.innerHTML = `<div class="medical-preview-fallback">Este archivo no tiene previsualización directa en el navegador. Podés abrirlo en otra pestaña o descargarlo.</div>`;
+      }
+
+      const download = document.getElementById("medicalPreviewDownload");
+      download.href = downloadUrl || "#";
+      download.download = title;
+      const openButton = document.getElementById("openMedicalPreviewNewTab");
+      openButton.disabled = !url && !downloadUrl;
+      openButton.onclick = () => {
+        const target = url || downloadUrl;
+        if (target) window.open(target, "_blank", "noopener");
+      };
+      document.getElementById("medicalPreviewDialog").showModal();
     }
 
     function resetControlTimes() {
@@ -4658,6 +5516,8 @@
     let feedingEntries = loadFeedingEntries();
     let activeFeeding = loadActiveFeeding();
     let selectedFeedingId = null;
+    let medicalRecords = loadMedicalRecords();
+    let medicalFilter = "all";
     const diaperDraft = { pee: false, poop: false };
 
     document.getElementById("contractionButton").addEventListener("click", handleContractionAction);
@@ -4750,16 +5610,33 @@
       const button = event.target.closest("[data-edit-feeding]");
       if (button) selectFeedingForEdit(button.dataset.editFeeding);
     });
+    document.getElementById("medicalConsultForm").addEventListener("submit", handleMedicalConsultSubmit);
+    document.getElementById("medicalStudyForm").addEventListener("submit", handleMedicalStudySubmit);
+    document.getElementById("medicalFilters").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-medical-filter]");
+      if (!button) return;
+      medicalFilter = button.dataset.medicalFilter || "all";
+      renderMedical();
+    });
+    document.getElementById("medicalRecordList").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-medical-record][data-medical-attachment]");
+      if (button) openMedicalAttachment(button.dataset.medicalRecord, button.dataset.medicalAttachment);
+    });
+    document.getElementById("closeMedicalPreview").addEventListener("click", () => {
+      document.getElementById("medicalPreviewDialog").close();
+    });
 
     function showAppView(view) {
-      const activeView = ["countdown", "contractions", "control", "newsletter", "admin"].includes(view) ? view : "countdown";
+      const activeView = ["countdown", "contractions", "control", "medical", "newsletter", "admin"].includes(view) ? view : "countdown";
       const showContractions = activeView === "contractions";
       const showControl = activeView === "control";
+      const showMedical = activeView === "medical";
       const showNewsletter = activeView === "newsletter";
       const showAdmin = activeView === "admin";
       document.getElementById("countdownView").hidden = activeView !== "countdown";
       document.getElementById("contractionsView").hidden = !showContractions;
       document.getElementById("controlView").hidden = !showControl;
+      document.getElementById("medicalView").hidden = !showMedical;
       document.getElementById("newsletterView").hidden = !showNewsletter;
       document.getElementById("adminView").hidden = !showAdmin;
       document.querySelectorAll(".app-tab").forEach((tab) => {
@@ -4772,6 +5649,10 @@
         renderControl();
         pullControlState();
       }
+      if (showMedical) {
+        renderMedical();
+        pullMedicalState();
+      }
       if (showAdmin) renderAdminState();
     }
 
@@ -4781,6 +5662,7 @@
         const hash = view === "contractions"
           ? "#contracciones"
           : view === "control" ? "#control"
+          : view === "medical" ? "#ficha-medica"
           : view === "newsletter" ? "#newsletter" : location.pathname + location.search;
         history.replaceState(null, "", hash);
         showAppView(view);
@@ -4791,6 +5673,7 @@
       showAppView(location.hash === "#contracciones"
         ? "contractions"
         : location.hash === "#control" ? "control"
+        : location.hash === "#ficha-medica" || location.hash === "#pediatria" ? "medical"
         : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
     });
 
@@ -4811,6 +5694,7 @@
         hasCelebrated = false;
         renderToday();
         renderControl();
+        renderMedical();
       }
     }, 30000);
 
@@ -4820,6 +5704,7 @@
 
     setInterval(() => {
       if (!document.getElementById("controlView").hidden) pullControlState();
+      if (!document.getElementById("medicalView").hidden) pullMedicalState();
     }, 7000);
 
     document.addEventListener("visibilitychange", () => {
@@ -4830,7 +5715,9 @@
         syncBabyStatus();
         renderToday();
         renderControl();
+        renderMedical();
         pullControlState();
+        pullMedicalState();
       }
     });
 
@@ -4839,10 +5726,12 @@
     renderToday();
     renderContractions();
     renderControl();
+    renderMedical();
     syncBabyStatus();
     showAppView(location.hash === "#contracciones"
       ? "contractions"
       : location.hash === "#control" ? "control"
+      : location.hash === "#ficha-medica" || location.hash === "#pediatria" ? "medical"
       : location.hash === "#newsletter" ? "newsletter" : location.hash === "#admin" ? "admin" : "countdown");
   </script>
 </body>
