@@ -199,6 +199,11 @@
       gap: 16px;
     }
 
+    .profile-birth-fields {
+      display: grid;
+      gap: 16px;
+    }
+
     .profile-two-cols {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1606,6 +1611,25 @@
       gap: 16px;
     }
 
+    .medical-history-tools {
+      display: grid;
+      justify-items: end;
+      gap: 10px;
+      min-width: min(440px, 100%);
+    }
+
+    .medical-search {
+      width: min(440px, 100%);
+      min-height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      font-size: 0.86rem;
+    }
+
     .medical-filter {
       display: flex;
       flex-wrap: wrap;
@@ -1628,6 +1652,46 @@
       border-color: var(--leaf);
       background: #e9f3ec;
       color: var(--leaf);
+    }
+
+    .medical-vaccine-panel {
+      display: grid;
+      gap: 14px;
+      margin: 16px 0;
+      padding: 14px;
+      border: 1px solid rgba(92, 134, 102, 0.28);
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
+    .medical-vaccine-panel[hidden] {
+      display: none;
+    }
+
+    .medical-vaccine-panel h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .vaccination-table {
+      min-width: 860px;
+    }
+
+    .vaccination-table input[type="date"],
+    .vaccination-table input[type="text"],
+    .vaccination-table input[type="file"] {
+      width: 100%;
+      min-height: 36px;
+      font: inherit;
+      font-size: 0.8rem;
+    }
+
+    .vaccination-table input[type="text"] {
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #fff;
     }
 
     .medical-record-list {
@@ -2351,6 +2415,15 @@
         flex-direction: column;
       }
 
+      .medical-history-tools {
+        justify-items: stretch;
+        min-width: 0;
+      }
+
+      .medical-search {
+        width: 100%;
+      }
+
       .control-table {
         min-width: 480px;
       }
@@ -2505,24 +2578,61 @@
               <input id="profileBabyFullName" type="text" placeholder="Valentina Apellido">
             </label>
           </div>
-          <div class="profile-two-cols">
-            <label class="edit-field">
-              <span>Fecha última menstruación</span>
-              <input id="profileLmpDate" type="date" required>
-            </label>
-            <label class="edit-field">
-              <span>FPP editable</span>
-              <input id="profileDueDate" type="date" required>
-            </label>
-          </div>
           <label class="edit-field">
-            <span>Evento actual</span>
+            <span>Estado</span>
             <select id="profileBabyStage">
               <option value="en_panza">En panza</option>
               <option value="en_camino">En camino</option>
               <option value="nacio">Nació</option>
             </select>
           </label>
+          <div class="profile-two-cols" id="profilePregnancyFields">
+            <label class="edit-field">
+              <span>Fecha última menstruación</span>
+              <input id="profileLmpDate" type="date">
+            </label>
+            <label class="edit-field">
+              <span>FPP editable</span>
+              <input id="profileDueDate" type="date">
+            </label>
+          </div>
+          <div class="profile-birth-fields" id="profileBirthFields" hidden>
+            <div class="profile-two-cols">
+              <label class="edit-field">
+                <span>Fecha nacimiento</span>
+                <input id="profileBirthDateTime" type="datetime-local" step="60">
+              </label>
+              <label class="edit-field">
+                <span>Edad</span>
+                <input id="profileBabyAge" type="text" readonly placeholder="Se calcula sola">
+              </label>
+            </div>
+            <div class="profile-two-cols">
+              <label class="edit-field">
+                <span>Peso actual</span>
+                <input id="profileCurrentWeight" type="text" readonly placeholder="Último peso de ficha médica">
+              </label>
+              <label class="edit-field">
+                <span>Grupo sanguíneo</span>
+                <input id="profileBloodType" type="text" list="profileBloodTypeOptions" placeholder="O+, A-, AB...">
+              </label>
+            </div>
+            <datalist id="profileBloodTypeOptions">
+              <option value="O+"></option>
+              <option value="O-"></option>
+              <option value="A+"></option>
+              <option value="A-"></option>
+              <option value="B+"></option>
+              <option value="B-"></option>
+              <option value="AB+"></option>
+              <option value="AB-"></option>
+            </datalist>
+            <label class="edit-field birth-file">
+              <span>Imagen grupo sanguíneo opcional</span>
+              <input id="profileBloodTypeFile" type="file" accept="image/*,.pdf">
+              <p class="birth-hint" id="profileBloodTypeHint">Podés adjuntar una foto o PDF del dato, si lo tienen.</p>
+            </label>
+          </div>
           <label class="edit-field birth-file">
             <span>Foto de la manada</span>
             <input id="profileFamilyPhoto" type="file" accept="image/*">
@@ -3003,14 +3113,14 @@
 
         <section class="medical-panel" aria-labelledby="medicalStudyTitle">
           <div>
-            <p class="model-kicker">Estudios y vacunas</p>
-            <h2 id="medicalStudyTitle">Nuevo registro</h2>
+            <p class="model-kicker">Estudios</p>
+            <h2 id="medicalStudyTitle">Nuevo estudio</h2>
           </div>
           <form class="medical-form" id="medicalStudyForm">
             <label class="edit-field">
               <span>Tipo</span>
               <select id="medicalStudyType" required>
-                <option value="vacunacion">Vacunación</option>
+                <option value="laboratorio" selected>Laboratorio</option>
                 <option value="analisis">Resultados de análisis</option>
                 <option value="imagen">Estudio por imágenes</option>
                 <option value="informe">Informe médico</option>
@@ -3027,7 +3137,7 @@
             </label>
             <label class="edit-field">
               <span>Resumen</span>
-              <textarea id="medicalStudySummary" placeholder="Vacuna aplicada, resultado, indicación o comentario..." required></textarea>
+              <textarea id="medicalStudySummary" placeholder="Resultado, indicación o comentario opcional..."></textarea>
             </label>
             <label class="edit-field birth-file">
               <span>Adjuntos opcionales</span>
@@ -3046,14 +3156,41 @@
             <p class="model-kicker">Historial</p>
             <h2 id="medicalHistoryTitle">Registros médicos</h2>
           </div>
-          <div class="medical-filter" id="medicalFilters" aria-label="Filtrar ficha médica">
-            <button class="active" type="button" data-medical-filter="all">Todo</button>
-            <button type="button" data-medical-filter="consulta">Consultas</button>
-            <button type="button" data-medical-filter="vacunacion">Vacunas</button>
-            <button type="button" data-medical-filter="estudios">Estudios</button>
+          <div class="medical-history-tools">
+            <input class="medical-search" id="medicalSearch" type="search" placeholder="Buscar por especialista, tipo o resumen">
+            <div class="medical-filter" id="medicalFilters" aria-label="Filtrar ficha médica">
+              <button class="active" type="button" data-medical-filter="consulta">Consultas</button>
+              <button type="button" data-medical-filter="vacunacion">Vacunas</button>
+              <button type="button" data-medical-filter="estudios">Estudios</button>
+            </div>
           </div>
         </div>
         <p class="announcement-status" id="medicalSyncStatus" aria-live="polite">Sincronización compartida activada.</p>
+        <section class="medical-vaccine-panel" id="vaccinationPanel" aria-labelledby="vaccinationTitle" hidden>
+          <div class="medical-extra-head">
+            <div>
+              <p class="model-kicker">Vacunas</p>
+              <h3 id="vaccinationTitle">Carnet editable</h3>
+            </div>
+            <small>Validen calendario y refuerzos con su pediatra.</small>
+          </div>
+          <div class="control-table-wrap">
+            <table class="control-table vaccination-table">
+              <thead>
+                <tr>
+                  <th>Vacuna</th>
+                  <th>Cuándo</th>
+                  <th>Fecha aplicada</th>
+                  <th>Nota</th>
+                  <th>Adjunto</th>
+                  <th>Guardar</th>
+                </tr>
+              </thead>
+              <tbody id="vaccinationRows"></tbody>
+            </table>
+          </div>
+          <p class="announcement-status" id="vaccinationStatus" aria-live="polite">Las vacunas se guardan en la ficha médica compartida.</p>
+        </section>
         <p class="control-empty" id="medicalEmpty">La primera consulta o estudio va a aparecer acá.</p>
         <div class="medical-record-list" id="medicalRecordList"></div>
       </section>
@@ -3288,6 +3425,9 @@
       lmpDate: "2025-10-08",
       dueDate: "2026-07-15",
       babyStage: "nacio",
+      birthDateTime: "2026-07-15T00:00",
+      bloodType: "",
+      bloodTypeAttachment: null,
       familyPhoto: ""
     };
     const GOOGLE_CLIENT_ID = "";
@@ -3298,6 +3438,7 @@
     const MEDICAL_TYPE_LABELS = {
       consulta: "Consulta",
       vacunacion: "Vacunación",
+      laboratorio: "Laboratorio",
       analisis: "Análisis",
       imagen: "Imagen",
       informe: "Informe",
@@ -3389,6 +3530,29 @@
         { id: "indicaciones", label: "Indicaciones", placeholder: "Qué dijo el médico" }
       ]
     };
+    const MEDICAL_OCR_AUTOFILL_CONFIDENCE = 70;
+    const pendingMedicalAttachments = {};
+    const VACCINE_TEMPLATE = [
+      { id: "bcg", name: "BCG", timing: "Nacimiento" },
+      { id: "hepatitis-b-nacimiento", name: "Hepatitis B", timing: "Nacimiento" },
+      { id: "rotavirus-2m", name: "Rotavirus", timing: "2 meses" },
+      { id: "pentavalente-2m", name: "Quíntuple / pentavalente", timing: "2 meses" },
+      { id: "neumococo-2m", name: "Neumococo conjugada", timing: "2 meses" },
+      { id: "ipv-2m", name: "IPV / Salk", timing: "2 meses" },
+      { id: "meningococo-3m", name: "Meningococo", timing: "3 meses" },
+      { id: "rotavirus-4m", name: "Rotavirus", timing: "4 meses" },
+      { id: "pentavalente-4m", name: "Quíntuple / pentavalente", timing: "4 meses" },
+      { id: "neumococo-4m", name: "Neumococo conjugada", timing: "4 meses" },
+      { id: "ipv-4m", name: "IPV / Salk", timing: "4 meses" },
+      { id: "meningococo-5m", name: "Meningococo", timing: "5 meses" },
+      { id: "pentavalente-6m", name: "Quíntuple / pentavalente", timing: "6 meses" },
+      { id: "ipv-6m", name: "IPV / Salk", timing: "6 meses" },
+      { id: "gripe-6m", name: "Gripe", timing: "Desde 6 meses" },
+      { id: "triple-viral-12m", name: "Triple viral", timing: "12 meses" },
+      { id: "hepatitis-a-12m", name: "Hepatitis A", timing: "12 meses" },
+      { id: "varicela-15m", name: "Varicela", timing: "15 meses" },
+      { id: "otras", name: "Otras / refuerzos", timing: "Según indicación" }
+    ];
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
       "No, pero sigue creciendo",
@@ -3540,6 +3704,24 @@
       return Boolean(localStorage.getItem(profileStorageKey(cleanSlug))) || profileIndex().includes(cleanSlug);
     }
 
+    function normalizeDateTimeInput(value) {
+      const text = String(value || "").slice(0, 16);
+      return Number.isFinite(fromBuenosAiresInput(text)) ? text : "";
+    }
+
+    function normalizeProfileAttachment(item) {
+      if (!item || typeof item !== "object") return null;
+      const dataUrl = typeof item.dataUrl === "string" && item.dataUrl.startsWith("data:") ? item.dataUrl : "";
+      if (!dataUrl && !item.filename) return null;
+      return {
+        filename: String(item.filename || "adjunto").slice(0, 160),
+        mimeType: String(item.mimeType || "application/octet-stream").slice(0, 120),
+        size: Number.isFinite(item.size) ? Number(item.size) : null,
+        dataUrl,
+        addedAt: item.addedAt || new Date().toISOString()
+      };
+    }
+
     function normalizeProfile(raw = {}) {
       const lmpDate = parseDateInput(raw.lmpDate) ? raw.lmpDate : DEFAULT_PROFILE.lmpDate;
       const dueDate = parseDateInput(raw.dueDate) ? raw.dueDate : calculateDueDateFromLmp(lmpDate);
@@ -3548,6 +3730,9 @@
       const babyStage = ["en_panza", "en_camino", "nacio"].includes(raw.babyStage)
         ? raw.babyStage
         : profileSlug === DEFAULT_PROFILE.profileSlug ? DEFAULT_PROFILE.babyStage : "en_panza";
+      const birthDateTime = normalizeDateTimeInput(raw.birthDateTime || raw.birthDate || (
+        profileSlug === DEFAULT_PROFILE.profileSlug ? DEFAULT_PROFILE.birthDateTime : ""
+      ));
       return {
         email: String(raw.email || DEFAULT_PROFILE.email).trim(),
         profileSlug,
@@ -3558,6 +3743,9 @@
         lmpDate,
         dueDate: dueDate || DEFAULT_PROFILE.dueDate,
         babyStage,
+        birthDateTime,
+        bloodType: String(raw.bloodType || "").trim().slice(0, 12),
+        bloodTypeAttachment: normalizeProfileAttachment(raw.bloodTypeAttachment),
         familyPhoto: typeof raw.familyPhoto === "string" && raw.familyPhoto.startsWith("data:image/")
           ? raw.familyPhoto
           : ""
@@ -3750,6 +3938,16 @@
         lmpDate: profile.lmpDate,
         dueDate: profile.dueDate,
         babyStage: profile.babyStage,
+        birthDateTime: profile.birthDateTime,
+        bloodType: profile.bloodType,
+        bloodTypeAttachment: profile.bloodTypeAttachment
+          ? {
+              filename: profile.bloodTypeAttachment.filename,
+              mimeType: profile.bloodTypeAttachment.mimeType,
+              size: profile.bloodTypeAttachment.size,
+              addedAt: profile.bloodTypeAttachment.addedAt
+            }
+          : null,
         updatedAt: new Date().toISOString()
       };
     }
@@ -3816,6 +4014,74 @@
         : "Vista previa de la manada";
     }
 
+    function latestProfileWeight() {
+      if (!Array.isArray(medicalRecords)) return null;
+      const records = medicalRecords
+        .filter((record) => record && Number.isFinite(record.timestamp))
+        .sort((a, b) => b.timestamp - a.timestamp);
+      for (const record of records) {
+        const field = normalizeStructuredFields(record.structuredFields).find((item) => (
+          normalizeMedicalKey(`${item.id} ${item.label}`).includes("peso")
+        ));
+        if (field) return { value: field.value, timestamp: record.timestamp };
+        const match = String(record.summary || "").match(/\bpeso\b\s*[:\-]?\s*([\d,.]+\s*(?:kg|g|kilos?)?)/i);
+        if (match) return { value: match[1].trim(), timestamp: record.timestamp };
+      }
+      return null;
+    }
+
+    function babyAgeLabelFromBirth(value) {
+      const timestamp = fromBuenosAiresInput(value);
+      if (!Number.isFinite(timestamp)) return "";
+      const days = Math.floor(Math.max(0, Date.now() - timestamp) / 86400000);
+      if (days === 0) return "Hoy";
+      if (days === 1) return "1 día";
+      if (days < 45) return `${days} días`;
+      const months = Math.floor(days / 30.4375);
+      const remainingDays = Math.max(0, Math.round(days - months * 30.4375));
+      if (months < 24) {
+        const monthText = months === 1 ? "1 mes" : `${months} meses`;
+        return remainingDays ? `${monthText} y ${remainingDays} días` : monthText;
+      }
+      const years = Math.floor(months / 12);
+      const yearMonths = months % 12;
+      const yearText = years === 1 ? "1 año" : `${years} años`;
+      return yearMonths ? `${yearText} y ${yearMonths} meses` : yearText;
+    }
+
+    function renderProfileStageFields() {
+      const stage = document.getElementById("profileBabyStage")?.value || currentProfile().babyStage;
+      const pregnancyFields = document.getElementById("profilePregnancyFields");
+      const birthFields = document.getElementById("profileBirthFields");
+      const lmpInput = document.getElementById("profileLmpDate");
+      const dueInput = document.getElementById("profileDueDate");
+      const birthInput = document.getElementById("profileBirthDateTime");
+      const ageInput = document.getElementById("profileBabyAge");
+      const weightInput = document.getElementById("profileCurrentWeight");
+      const bloodHint = document.getElementById("profileBloodTypeHint");
+      const showBirth = stage === "nacio";
+
+      if (pregnancyFields) pregnancyFields.hidden = showBirth;
+      if (birthFields) birthFields.hidden = !showBirth;
+      if (lmpInput) lmpInput.required = !showBirth;
+      if (dueInput) dueInput.required = !showBirth;
+      if (birthInput) birthInput.required = showBirth;
+
+      if (ageInput) ageInput.value = showBirth ? babyAgeLabelFromBirth(birthInput?.value || currentProfile().birthDateTime) : "";
+      if (weightInput) {
+        const weight = latestProfileWeight();
+        weightInput.value = showBirth && weight
+          ? `${weight.value} · ${medicalDateLabel(weight.timestamp)}`
+          : "";
+      }
+      if (bloodHint) {
+        const attachment = currentProfile().bloodTypeAttachment;
+        bloodHint.textContent = attachment
+          ? `Adjunto guardado: ${attachment.filename}. Si cargás otro, lo reemplaza.`
+          : "Podés adjuntar una foto o PDF del dato, si lo tienen.";
+      }
+    }
+
     function fillProfileForm() {
       const profile = currentProfile();
       const setValue = (id, value) => {
@@ -3831,12 +4097,15 @@
       setValue("profileLmpDate", profile.lmpDate);
       setValue("profileDueDate", profile.dueDate);
       setValue("profileBabyStage", profile.babyStage);
+      setValue("profileBirthDateTime", profile.birthDateTime);
+      setValue("profileBloodType", profile.bloodType);
       profileSlugTouched = false;
       const urlHint = document.getElementById("profileUrlHint");
       if (urlHint) urlHint.textContent = `Link del perfil: ${profileShareUrl(profile.profileSlug)}`;
       const button = document.getElementById("saveFamilyProfile");
       if (button) button.textContent = hasFamilyProfile() ? "Guardar cambios" : "Crear mi web";
       renderProfilePreview();
+      renderProfileStageFields();
     }
 
     function applyFamilyProfile() {
@@ -3873,6 +4142,8 @@
       const email = document.getElementById("profileEmail").value.trim();
       const baby = document.getElementById("profileBabyName").value.trim();
       const dueDate = document.getElementById("profileDueDate").value;
+      const babyStage = document.getElementById("profileBabyStage").value;
+      const birthDateTime = document.getElementById("profileBirthDateTime").value;
       const selectedSlug = slugify(document.getElementById("profileSlug").value || baby);
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         setProfileStatus("Si cargás mail, poné uno válido.", true);
@@ -3892,18 +4163,38 @@
         setProfileStatus(`La URL ${selectedSlug} ya existe en este navegador. Te propuse ${suggestion}; podés editarla.`, true);
         return;
       }
-      if (!parseDateInput(dueDate)) {
+      if (babyStage !== "nacio" && !parseDateInput(dueDate)) {
         setProfileStatus("Revisá la FPP: tiene que ser una fecha válida.", true);
+        return;
+      }
+      if (babyStage === "nacio" && !Number.isFinite(fromBuenosAiresInput(birthDateTime))) {
+        setProfileStatus("Cargá la fecha y hora de nacimiento.", true);
         return;
       }
 
       const existingPhoto = currentProfile().familyPhoto;
+      const existingBloodTypeAttachment = currentProfile().bloodTypeAttachment;
       let familyPhoto = existingPhoto;
+      let bloodTypeAttachment = existingBloodTypeAttachment;
       const photoFile = document.getElementById("profileFamilyPhoto").files[0];
+      const bloodTypeFile = document.getElementById("profileBloodTypeFile").files[0];
       try {
         if (photoFile) {
           setProfileStatus("Preparando la foto de la manada...");
           familyPhoto = await compactFamilyPhoto(photoFile);
+        }
+        if (bloodTypeFile) {
+          if (bloodTypeFile.size > MEDICAL_ATTACHMENT_MAX_BYTES) {
+            throw new Error("La imagen del grupo sanguíneo pesa más de 4 MB.");
+          }
+          setProfileStatus("Guardando el adjunto del grupo sanguíneo...");
+          bloodTypeAttachment = {
+            filename: bloodTypeFile.name || "grupo-sanguineo",
+            mimeType: bloodTypeFile.type || "application/octet-stream",
+            size: bloodTypeFile.size,
+            dataUrl: await readFileAsDataUrl(bloodTypeFile),
+            addedAt: new Date().toISOString()
+          };
         }
         familyProfile = normalizeProfile({
           email,
@@ -3914,7 +4205,10 @@
           babyFullName: document.getElementById("profileBabyFullName").value || baby,
           lmpDate: document.getElementById("profileLmpDate").value,
           dueDate,
-          babyStage: document.getElementById("profileBabyStage").value,
+          babyStage,
+          birthDateTime,
+          bloodType: document.getElementById("profileBloodType").value,
+          bloodTypeAttachment,
           familyPhoto
         });
         saveFamilyProfileToStorage();
@@ -5011,7 +5305,7 @@
       container.innerHTML = fields.map((field) => `
         <label class="edit-field">
           <span>${escapeHtml(field.label)}</span>
-          <input type="text" data-medical-structured-field="${escapeHtml(field.id)}" data-medical-structured-label="${escapeHtml(field.label)}" placeholder="${escapeHtml(field.placeholder || "")}">
+          <input type="${field.id.includes("proximo") || field.id.includes("proxima") || field.id.includes("fecha") ? "date" : "text"}" data-medical-structured-field="${escapeHtml(field.id)}" data-medical-structured-label="${escapeHtml(field.label)}" placeholder="${escapeHtml(field.placeholder || "")}">
         </label>
       `).join("");
       if (hint) {
@@ -5373,6 +5667,151 @@
       return attachments;
     }
 
+    function medicalFileSignature(input) {
+      return Array.from(input?.files || [])
+        .map((file) => `${file.name}:${file.size}:${file.lastModified}`)
+        .join("|");
+    }
+
+    function bestOcrAttachment(attachments) {
+      return (attachments || []).find((attachment) => (
+        attachment.ocrText
+        && Number.isFinite(attachment.ocrConfidence)
+        && attachment.ocrConfidence >= MEDICAL_OCR_AUTOFILL_CONFIDENCE
+      )) || null;
+    }
+
+    function firstMeaningfulOcrText(text) {
+      return String(text || "")
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 4)
+        .slice(0, 8)
+        .join("\n")
+        .slice(0, 900);
+    }
+
+    function specialistFromOcr(text, type = "") {
+      const source = normalizeMedicalKey(`${type} ${text}`);
+      if (/pediatr/.test(source)) return "Pediatra";
+      if (/oftal/.test(source)) return "Oftalmólogo";
+      if (/dermat/.test(source)) return "Dermatólogo";
+      if (/cardio/.test(source)) return "Cardiólogo";
+      if (/neuro/.test(source)) return "Neurólogo";
+      if (/otorr|orl/.test(source)) return "Otorrino";
+      if (/trauma|ortop/.test(source)) return "Traumatólogo";
+      if (/gastro/.test(source)) return "Gastroenterólogo";
+      if (/vacuna|vacunacion|inmunizacion/.test(source)) return "Vacunatorio";
+      if (/lab|laboratorio|hemograma|orina|sangre|bilirrubina|analisis|resultado/.test(source)) return "Laboratorio";
+      return "";
+    }
+
+    function studyTypeFromOcr(text, type = "") {
+      const source = normalizeMedicalKey(`${type} ${text}`);
+      if (/lab|laboratorio|hemograma|orina|sangre|bilirrubina|analisis|resultado/.test(source)) return "laboratorio";
+      if (/ecografia|radiografia|resonancia|tomografia|imagen|rx|eco/.test(source)) return "imagen";
+      if (/informe|diagnostico|evolucion/.test(source)) return "informe";
+      return "otro";
+    }
+
+    function extractDateFromOcr(text) {
+      const source = String(text || "");
+      const match = source.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](20\d{2})\b/) || source.match(/\b(20\d{2})[\/\-.](\d{1,2})[\/\-.](\d{1,2})\b/);
+      if (!match) return "";
+      const year = match[1].length === 4 ? Number(match[1]) : Number(match[3]);
+      const month = match[1].length === 4 ? Number(match[2]) : Number(match[2]);
+      const day = match[1].length === 4 ? Number(match[3]) : Number(match[1]);
+      const date = new Date(year, month - 1, day);
+      return Number.isFinite(date.getTime()) ? formatDateInput(date) : "";
+    }
+
+    function extractOcrValue(text, keywords) {
+      const lines = String(text || "").split(/\n+/).map((line) => line.trim()).filter(Boolean);
+      for (const keyword of keywords) {
+        const pattern = new RegExp(`${keyword}\\s*[:\\-]?\\s*([^\\n]{2,80})`, "i");
+        const match = lines.join("\n").match(pattern);
+        if (match) return match[1].trim().replace(/\s{2,}/g, " ").slice(0, 80);
+      }
+      return "";
+    }
+
+    function setValueIfEmpty(id, value) {
+      const input = document.getElementById(id);
+      if (input && value && !input.value.trim()) input.value = value;
+    }
+
+    function setStructuredValueIfEmpty(fieldId, value) {
+      if (!value) return;
+      const input = document.querySelector(`[data-medical-structured-field="${fieldId}"]`);
+      if (input && !input.value.trim()) input.value = value;
+    }
+
+    function prefillStructuredFieldsFromOcr(text) {
+      setStructuredValueIfEmpty("peso", extractOcrValue(text, ["peso"]));
+      setStructuredValueIfEmpty("talla", extractOcrValue(text, ["talla", "altura"]));
+      setStructuredValueIfEmpty("perimetro_cefalico", extractOcrValue(text, ["perimetro cefalico", "pc"]));
+      setStructuredValueIfEmpty("resultado_clave", extractOcrValue(text, ["resultado", "valor"]));
+      setStructuredValueIfEmpty("lote", extractOcrValue(text, ["lote"]));
+      setStructuredValueIfEmpty("dosis", extractOcrValue(text, ["dosis"]));
+      const nextControl = extractDateFromOcr(text);
+      setStructuredValueIfEmpty("proximo_control", nextControl);
+      setStructuredValueIfEmpty("proxima_dosis", nextControl);
+    }
+
+    function prefillMedicalFormFromOcr(kind, attachments, statusElementId) {
+      const attachment = bestOcrAttachment(attachments);
+      if (!attachment) {
+        if ((attachments || []).some((item) => item.ocrText)) {
+          setInlineStatus(statusElementId, "Texto digitalizado guardado, pero con baja confianza: revisalo al abrir el adjunto.");
+        }
+        return;
+      }
+      const text = attachment.ocrText;
+      const docType = attachment.ocrType || medicalDocumentTypeFromText(text, attachment.filename);
+      const specialist = specialistFromOcr(text, docType);
+      const summary = firstMeaningfulOcrText(text);
+      const detectedDate = extractDateFromOcr(text);
+
+      if (kind === "consulta") {
+        setValueIfEmpty("medicalConsultSpecialist", specialist || "Pediatra");
+        renderMedicalStructuredFields();
+        setValueIfEmpty("medicalConsultSummary", summary);
+        if (detectedDate) {
+          const dateInput = document.getElementById("medicalConsultDate");
+          if (dateInput) dateInput.value = `${detectedDate}T12:00`;
+        }
+        prefillStructuredFieldsFromOcr(text);
+      } else if (kind === "estudio") {
+        const typeInput = document.getElementById("medicalStudyType");
+        if (typeInput) typeInput.value = studyTypeFromOcr(text, docType);
+        setValueIfEmpty("medicalStudySpecialist", specialist || "Laboratorio");
+        setValueIfEmpty("medicalStudySummary", summary);
+        if (detectedDate) {
+          const dateInput = document.getElementById("medicalStudyDate");
+          if (dateInput) dateInput.value = `${detectedDate}T12:00`;
+        }
+      }
+
+      setInlineStatus(statusElementId, `Precompleté con OCR ${attachment.ocrConfidence}%. Podés editar antes de guardar.`);
+    }
+
+    async function handleMedicalFilePrefill(fileInputId, statusElementId, kind) {
+      const input = document.getElementById(fileInputId);
+      if (!input || !input.files.length) {
+        delete pendingMedicalAttachments[fileInputId];
+        return;
+      }
+      try {
+        const signature = medicalFileSignature(input);
+        const attachments = await readMedicalAttachments(input, statusElementId);
+        pendingMedicalAttachments[fileInputId] = { signature, attachments };
+        prefillMedicalFormFromOcr(kind, attachments, statusElementId);
+      } catch (error) {
+        delete pendingMedicalAttachments[fileInputId];
+        setInlineStatus(statusElementId, error.message || "No pude leer los adjuntos.", true);
+      }
+    }
+
     function prettyFileSize(bytes) {
       if (!Number.isFinite(bytes)) return "";
       if (bytes < 1024) return `${bytes} B`;
@@ -5388,10 +5827,162 @@
       return !["consulta", "vacunacion"].includes(type);
     }
 
+    function medicalSearchText(record) {
+      return normalizeMedicalKey([
+        medicalTypeLabel(record.type),
+        record.type,
+        record.specialist,
+        record.summary,
+        ...(record.structuredFields || []).flatMap((field) => [field.label, field.value]),
+        ...(record.attachments || []).flatMap((attachment) => [
+          attachment.filename,
+          attachment.ocrType,
+          attachment.ocrText
+        ])
+      ].join(" "));
+    }
+
     function medicalRecordMatchesFilter(record) {
-      if (medicalFilter === "all") return true;
       if (medicalFilter === "estudios") return isMedicalStudy(record.type);
+      if (medicalFilter === "vacunacion") return record.type === "vacunacion";
       return record.type === medicalFilter;
+    }
+
+    function medicalRecordMatchesSearch(record) {
+      const term = normalizeMedicalKey(medicalSearchTerm);
+      return !term || medicalSearchText(record).includes(term);
+    }
+
+    function vaccineRecordId(vaccineId) {
+      return `vaccine:${currentProfileSlug()}:${vaccineId}`;
+    }
+
+    function vaccineRecordFor(vaccineId) {
+      return medicalRecords.find((record) => record.id === vaccineRecordId(vaccineId)) || null;
+    }
+
+    function vaccineFieldValue(record, fieldId) {
+      const field = normalizeStructuredFields(record?.structuredFields).find((item) => item.id === fieldId);
+      return field ? field.value : "";
+    }
+
+    function renderVaccinationTable() {
+      const rows = document.getElementById("vaccinationRows");
+      if (!rows) return;
+      rows.innerHTML = VACCINE_TEMPLATE.map((vaccine) => {
+        const record = vaccineRecordFor(vaccine.id);
+        const date = vaccineFieldValue(record, "fecha_aplicada") || (record ? toBuenosAiresInput(record.timestamp).slice(0, 10) : "");
+        const note = vaccineFieldValue(record, "observaciones");
+        const attachments = record?.attachments?.length
+          ? `<div class="control-photo-actions">${record.attachments.map((attachment) => {
+              const downloadUrl = attachmentDownloadUrl(attachment);
+              return `
+                <button class="attachment-button" type="button" data-medical-record="${escapeHtml(record.id)}" data-medical-attachment="${escapeHtml(attachment.id)}">
+                  Abrir ${escapeHtml(attachment.filename)}
+                </button>
+                ${downloadUrl ? `<a class="attachment-download" href="${escapeHtml(downloadUrl)}" download="${escapeHtml(attachment.filename)}" target="_blank" rel="noopener">Descargar</a>` : ""}
+              `;
+            }).join("")}</div>`
+          : "";
+        return `
+          <tr data-vaccine-id="${escapeHtml(vaccine.id)}">
+            <td><strong>${escapeHtml(vaccine.name)}</strong></td>
+            <td>${escapeHtml(vaccine.timing)}</td>
+            <td><input type="date" data-vaccine-date value="${escapeHtml(date)}"></td>
+            <td><input type="text" data-vaccine-note value="${escapeHtml(note)}" placeholder="Lote, reacción, lugar..."></td>
+            <td>
+              <input type="file" data-vaccine-file accept="image/*,.pdf,.doc,.docx,.txt">
+              ${attachments}
+            </td>
+            <td><button class="control-secondary" type="button" data-save-vaccine="${escapeHtml(vaccine.id)}">Guardar</button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function handleVaccineFilePrefill(row) {
+      const fileInput = row?.querySelector("[data-vaccine-file]");
+      const vaccineId = row?.dataset.vaccineId;
+      if (!fileInput || !vaccineId || !fileInput.files.length) return;
+      const cacheKey = `vaccine:${vaccineId}`;
+      try {
+        const signature = medicalFileSignature(fileInput);
+        const attachments = await readMedicalAttachments(fileInput, "vaccinationStatus");
+        pendingMedicalAttachments[cacheKey] = { signature, attachments };
+        const attachment = bestOcrAttachment(attachments);
+        if (!attachment) {
+          setInlineStatus("vaccinationStatus", "Adjunto listo. OCR con baja confianza, se guarda igual.");
+          return;
+        }
+        const date = extractDateFromOcr(attachment.ocrText);
+        const dateInput = row.querySelector("[data-vaccine-date]");
+        const noteInput = row.querySelector("[data-vaccine-note]");
+        if (date && dateInput) dateInput.value = date;
+        if (noteInput && !noteInput.value.trim()) {
+          noteInput.value = firstMeaningfulOcrText(attachment.ocrText).slice(0, 140);
+        }
+        setInlineStatus("vaccinationStatus", `Precompleté vacuna con OCR ${attachment.ocrConfidence}%.`);
+      } catch (error) {
+        delete pendingMedicalAttachments[cacheKey];
+        setInlineStatus("vaccinationStatus", error.message || "No pude leer el adjunto.", true);
+      }
+    }
+
+    async function saveVaccineRow(vaccineId) {
+      const vaccine = VACCINE_TEMPLATE.find((item) => item.id === vaccineId);
+      const row = document.querySelector(`[data-vaccine-id="${vaccineId}"]`);
+      if (!vaccine || !row) return;
+      const dateValue = row.querySelector("[data-vaccine-date]")?.value || "";
+      const note = row.querySelector("[data-vaccine-note]")?.value.trim() || "";
+      const date = parseDateInput(dateValue);
+      if (!date) {
+        setInlineStatus("vaccinationStatus", "Elegí la fecha aplicada antes de guardar.", true);
+        return;
+      }
+
+      const fileInput = row.querySelector("[data-vaccine-file]");
+      const cacheKey = `vaccine:${vaccineId}`;
+      let newAttachments = [];
+      try {
+        if (fileInput?.files?.length) {
+          const cached = pendingMedicalAttachments[cacheKey];
+          newAttachments = cached && cached.signature === medicalFileSignature(fileInput)
+            ? cached.attachments
+            : await readMedicalAttachments(fileInput, "vaccinationStatus");
+        }
+      } catch (error) {
+        setInlineStatus("vaccinationStatus", error.message || "No pude leer el adjunto.", true);
+        return;
+      }
+      delete pendingMedicalAttachments[cacheKey];
+
+      const existing = vaccineRecordFor(vaccineId);
+      const timestamp = new Date(`${dateValue}T12:00:00-03:00`).getTime();
+      const nowIso = new Date().toISOString();
+      const record = {
+        id: vaccineRecordId(vaccineId),
+        type: "vacunacion",
+        timestamp,
+        specialist: "Vacunatorio",
+        summary: note ? `${vaccine.name}. ${note}` : vaccine.name,
+        structuredFields: normalizeStructuredFields([
+          { id: "vacuna", label: "Vacuna", value: vaccine.name },
+          { id: "edad_sugerida", label: "Cuándo", value: vaccine.timing },
+          { id: "fecha_aplicada", label: "Fecha aplicada", value: dateValue },
+          { id: "observaciones", label: "Observaciones", value: note }
+        ]),
+        attachments: mergeMedicalAttachments(existing?.attachments || [], newAttachments),
+        deviceId: getDeviceId(),
+        profileSlug: currentProfileSlug(),
+        createdAt: existing?.createdAt || nowIso,
+        updatedAt: nowIso
+      };
+
+      medicalRecords = medicalRecords.filter((item) => item.id !== record.id);
+      medicalRecords.push(record);
+      saveMedicalRecords();
+      renderMedical();
+      await syncMedicalState("vaccinationStatus", "Vacuna guardada y sincronizada.");
     }
 
     function medicalDateLabel(timestamp) {
@@ -5410,6 +6001,7 @@
 
     function renderMedical() {
       resetMedicalTimes();
+      renderProfileStageFields();
       const consults = medicalRecords.filter((record) => record.type === "consulta");
       const vaccines = medicalRecords.filter((record) => record.type === "vacunacion");
       const studies = medicalRecords.filter((record) => isMedicalStudy(record.type));
@@ -5425,10 +6017,21 @@
         button.setAttribute("aria-pressed", String(active));
       });
 
+      const vaccinationPanel = document.getElementById("vaccinationPanel");
+      if (vaccinationPanel) vaccinationPanel.hidden = medicalFilter !== "vacunacion";
+      renderVaccinationTable();
+
       const filtered = medicalRecords
         .filter(medicalRecordMatchesFilter)
+        .filter(medicalRecordMatchesSearch)
         .sort((a, b) => b.timestamp - a.timestamp);
-      document.getElementById("medicalEmpty").hidden = filtered.length > 0;
+      const empty = document.getElementById("medicalEmpty");
+      empty.textContent = medicalFilter === "vacunacion"
+        ? "Las vacunas guardadas van a aparecer acá."
+        : medicalFilter === "estudios"
+          ? "Los estudios guardados van a aparecer acá."
+          : "Las consultas guardadas van a aparecer acá.";
+      empty.hidden = filtered.length > 0;
       const list = document.getElementById("medicalRecordList");
       list.innerHTML = filtered.map((record) => {
         const specialist = record.specialist
@@ -5483,7 +6086,7 @@
         setInlineStatus(config.statusId, "Cargá el especialista o escribilo a mano.", true);
         return;
       }
-      if (!summary && !structuredFields.length) {
+      if (!config.allowEmptySummary && !summary && !structuredFields.length && !fileInput.files.length) {
         setInlineStatus(config.statusId, "Escribí un resumen breve o completá algún dato sugerido.", true);
         return;
       }
@@ -5491,11 +6094,15 @@
       setInlineStatus(config.statusId, fileInput.files.length ? "Leyendo adjuntos..." : "Guardando ficha...");
       let attachments;
       try {
-        attachments = await readMedicalAttachments(fileInput, config.statusId);
+        const cached = pendingMedicalAttachments[config.fileId];
+        attachments = cached && cached.signature === medicalFileSignature(fileInput)
+          ? cached.attachments
+          : await readMedicalAttachments(fileInput, config.statusId);
       } catch (error) {
         setInlineStatus(config.statusId, error.message || "No pude leer los adjuntos.", true);
         return;
       }
+      delete pendingMedicalAttachments[config.fileId];
 
       medicalRecords.push({
         id: makeId(),
@@ -5546,7 +6153,8 @@
         summaryId: "medicalStudySummary",
         fileId: "medicalStudyFiles",
         statusId: "medicalStudyStatus",
-        requireSpecialist: false
+        requireSpecialist: false,
+        allowEmptySummary: true
       });
     }
 
@@ -7127,7 +7735,8 @@
     let activeFeeding = loadActiveFeeding();
     let selectedFeedingId = null;
     let medicalRecords = loadMedicalRecords();
-    let medicalFilter = "all";
+    let medicalFilter = "consulta";
+    let medicalSearchTerm = "";
     const diaperDraft = { pee: false, poop: false };
 
     function reloadProfileScopedState() {
@@ -7249,11 +7858,31 @@
     document.getElementById("medicalStudyForm").addEventListener("submit", handleMedicalStudySubmit);
     document.getElementById("medicalConsultSpecialist").addEventListener("input", renderMedicalStructuredFields);
     document.getElementById("medicalConsultSpecialist").addEventListener("change", renderMedicalStructuredFields);
+    document.getElementById("medicalConsultFiles").addEventListener("change", () => {
+      handleMedicalFilePrefill("medicalConsultFiles", "medicalConsultStatus", "consulta");
+    });
+    document.getElementById("medicalStudyFiles").addEventListener("change", () => {
+      handleMedicalFilePrefill("medicalStudyFiles", "medicalStudyStatus", "estudio");
+    });
+    document.getElementById("medicalSearch").addEventListener("input", (event) => {
+      medicalSearchTerm = event.target.value;
+      renderMedical();
+    });
     document.getElementById("medicalFilters").addEventListener("click", (event) => {
       const button = event.target.closest("[data-medical-filter]");
       if (!button) return;
-      medicalFilter = button.dataset.medicalFilter || "all";
+      medicalFilter = button.dataset.medicalFilter || "consulta";
       renderMedical();
+    });
+    document.getElementById("vaccinationRows").addEventListener("click", (event) => {
+      const saveButton = event.target.closest("[data-save-vaccine]");
+      const attachmentButton = event.target.closest("[data-medical-record][data-medical-attachment]");
+      if (saveButton) saveVaccineRow(saveButton.dataset.saveVaccine);
+      if (attachmentButton) openMedicalAttachment(attachmentButton.dataset.medicalRecord, attachmentButton.dataset.medicalAttachment);
+    });
+    document.getElementById("vaccinationRows").addEventListener("change", (event) => {
+      const fileInput = event.target.closest("[data-vaccine-file]");
+      if (fileInput) handleVaccineFilePrefill(fileInput.closest("[data-vaccine-id]"));
     });
     document.getElementById("medicalRecordList").addEventListener("click", (event) => {
       const button = event.target.closest("[data-medical-record][data-medical-attachment]");
@@ -7387,12 +8016,14 @@
       if (hint) hint.textContent = `Link del perfil: ${profileShareUrl(input.value)}`;
     });
     document.getElementById("profileBabyStage").addEventListener("change", () => {
+      renderProfileStageFields();
       if (!familyProfile) return;
       familyProfile = normalizeProfile({ ...familyProfile, babyStage: document.getElementById("profileBabyStage").value });
       saveFamilyProfileToStorage();
       babyStatus = profileStageStatus();
       renderToday();
     });
+    document.getElementById("profileBirthDateTime").addEventListener("input", renderProfileStageFields);
     document.getElementById("profileLmpDate").addEventListener("input", handleProfileLmpInput);
     document.getElementById("profileDueDate").addEventListener("input", () => {
       profileDueTouched = true;
