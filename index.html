@@ -1674,7 +1674,7 @@
     }
 
     .vaccination-table {
-      min-width: 860px;
+      min-width: 1120px;
     }
 
     .vaccination-table input[type="date"],
@@ -3178,9 +3178,11 @@
             <table class="control-table vaccination-table">
               <thead>
                 <tr>
+                  <th>Edad</th>
                   <th>Vacuna</th>
-                  <th>Cuándo</th>
+                  <th>Dosis</th>
                   <th>Fecha aplicada</th>
+                  <th>Lote</th>
                   <th>Nota</th>
                   <th>Adjunto</th>
                   <th>Guardar</th>
@@ -3533,25 +3535,36 @@
     const MEDICAL_OCR_AUTOFILL_CONFIDENCE = 70;
     const pendingMedicalAttachments = {};
     const VACCINE_TEMPLATE = [
-      { id: "bcg", name: "BCG", timing: "Nacimiento" },
-      { id: "hepatitis-b-nacimiento", name: "Hepatitis B", timing: "Nacimiento" },
-      { id: "rotavirus-2m", name: "Rotavirus", timing: "2 meses" },
-      { id: "pentavalente-2m", name: "Quíntuple / pentavalente", timing: "2 meses" },
-      { id: "neumococo-2m", name: "Neumococo conjugada", timing: "2 meses" },
-      { id: "ipv-2m", name: "IPV / Salk", timing: "2 meses" },
-      { id: "meningococo-3m", name: "Meningococo", timing: "3 meses" },
-      { id: "rotavirus-4m", name: "Rotavirus", timing: "4 meses" },
-      { id: "pentavalente-4m", name: "Quíntuple / pentavalente", timing: "4 meses" },
-      { id: "neumococo-4m", name: "Neumococo conjugada", timing: "4 meses" },
-      { id: "ipv-4m", name: "IPV / Salk", timing: "4 meses" },
-      { id: "meningococo-5m", name: "Meningococo", timing: "5 meses" },
-      { id: "pentavalente-6m", name: "Quíntuple / pentavalente", timing: "6 meses" },
-      { id: "ipv-6m", name: "IPV / Salk", timing: "6 meses" },
-      { id: "gripe-6m", name: "Gripe", timing: "Desde 6 meses" },
-      { id: "triple-viral-12m", name: "Triple viral", timing: "12 meses" },
-      { id: "hepatitis-a-12m", name: "Hepatitis A", timing: "12 meses" },
-      { id: "varicela-15m", name: "Varicela", timing: "15 meses" },
-      { id: "otras", name: "Otras / refuerzos", timing: "Según indicación" }
+      { id: "bcg", timing: "Recién nacido", name: "BCG", dose: "Única", defaultDate: "2026-07-15" },
+      { id: "hepatitis-b-nacimiento", timing: "Recién nacido", name: "Antihepatitis B", dose: "Dosis neonatal", defaultDate: "2026-07-15" },
+      { id: "pentavalente-2m", timing: "2 meses", name: "Quíntuple-Séxtuple", dose: "1°" },
+      { id: "ipv-2m", timing: "2 meses", name: "Polio Salk", dose: "1°" },
+      { id: "neumococo-2m", timing: "2 meses", name: "Neumococo conjugada", dose: "1°" },
+      { id: "rotavirus-2m", timing: "2 meses", name: "Rotavirus", dose: "1°" },
+      { id: "meningococo-3m", timing: "3 meses", name: "Meningococo", dose: "1°" },
+      { id: "pentavalente-4m", timing: "4 meses", name: "Quíntuple-Séxtuple", dose: "2°" },
+      { id: "ipv-4m", timing: "4 meses", name: "Polio Salk", dose: "2°" },
+      { id: "neumococo-4m", timing: "4 meses", name: "Neumococo conjugada", dose: "2°" },
+      { id: "rotavirus-4m", timing: "4 meses", name: "Rotavirus", dose: "2°" },
+      { id: "meningococo-5m", timing: "5 meses", name: "Meningococo", dose: "2°" },
+      { id: "pentavalente-6m", timing: "6 meses", name: "Quíntuple-Séxtuple", dose: "3°" },
+      { id: "ipv-6m", timing: "6 meses", name: "Polio Sabin", dose: "3°" },
+      { id: "neumococo-12m-refuerzo", timing: "12 meses", name: "Neumococo conjugada", dose: "Refuerzo" },
+      { id: "hepatitis-a-12m", timing: "12 meses", name: "Hepatitis A", dose: "Única" },
+      { id: "triple-viral-12m", timing: "12 meses", name: "Triple viral", dose: "1°" },
+      { id: "meningococo-15m", timing: "15 meses", name: "Meningococo", dose: "Refuerzo" },
+      { id: "varicela-15m", timing: "15 meses", name: "Varicela", dose: "Única" },
+      { id: "cuadruple-quintuple-15-18m", timing: "15-18 meses", name: "Cuádruple-Quíntuple", dose: "1° Refuerzo" },
+      { id: "polio-sabin-15-18m", timing: "15-18 meses", name: "Polio Sabin", dose: "1° Refuerzo" },
+      { id: "polio-sabin-5-6", timing: "5-6 años ingreso escolar", name: "Polio Sabin", dose: "2° Refuerzo" },
+      { id: "triple-viral-5-6", timing: "5-6 años ingreso escolar", name: "Triple viral", dose: "2°" },
+      { id: "triple-bacteriana-celular-5-6", timing: "5-6 años ingreso escolar", name: "Triple bacteriana celular", dose: "2° Refuerzo" },
+      { id: "triple-bacteriana-acelular-5-6", timing: "5-6 años ingreso escolar", name: "Triple bacteriana acelular", dose: "Refuerzo" },
+      { id: "virus-papiloma-11-1", timing: "11 años", name: "Virus Papiloma", dose: "1°" },
+      { id: "virus-papiloma-11-2", timing: "11 años", name: "Virus Papiloma", dose: "2°" },
+      { id: "meningococo-11", timing: "11 años", name: "Meningococo", dose: "Única" },
+      { id: "antigripal-6-24-1", timing: "6 a 24 meses", name: "Antigripal", dose: "1°" },
+      { id: "antigripal-6-24-2", timing: "6 a 24 meses", name: "Antigripal", dose: "2°" }
     ];
     const BUENOS_AIRES_TIME_ZONE = "America/Argentina/Buenos_Aires";
     const NO_MESSAGES = [
@@ -5883,7 +5896,10 @@
       if (!rows) return;
       rows.innerHTML = VACCINE_TEMPLATE.map((vaccine) => {
         const record = vaccineRecordFor(vaccine.id);
-        const date = vaccineFieldValue(record, "fecha_aplicada") || (record ? toBuenosAiresInput(record.timestamp).slice(0, 10) : "");
+        const defaultDate = isLegacyOliProfile() ? vaccine.defaultDate : "";
+        const date = vaccineFieldValue(record, "fecha_aplicada") || (record ? toBuenosAiresInput(record.timestamp).slice(0, 10) : "") || defaultDate || "";
+        const lot = vaccineFieldValue(record, "lote");
+        const stamp = vaccineFieldValue(record, "sello_firma");
         const note = vaccineFieldValue(record, "observaciones");
         const attachments = record?.attachments?.length
           ? `<div class="control-photo-actions">${record.attachments.map((attachment) => {
@@ -5898,10 +5914,12 @@
           : "";
         return `
           <tr data-vaccine-id="${escapeHtml(vaccine.id)}">
-            <td><strong>${escapeHtml(vaccine.name)}</strong></td>
             <td>${escapeHtml(vaccine.timing)}</td>
+            <td><strong>${escapeHtml(vaccine.name)}</strong></td>
+            <td>${escapeHtml(vaccine.dose || "")}</td>
             <td><input type="date" data-vaccine-date value="${escapeHtml(date)}"></td>
-            <td><input type="text" data-vaccine-note value="${escapeHtml(note)}" placeholder="Lote, reacción, lugar..."></td>
+            <td><input type="text" data-vaccine-lot value="${escapeHtml(lot)}" placeholder="Lote"></td>
+            <td><input type="text" data-vaccine-note value="${escapeHtml(stamp || note)}" placeholder="Sello, firma o nota..."></td>
             <td>
               <input type="file" data-vaccine-file accept="image/*,.pdf,.doc,.docx,.txt">
               ${attachments}
@@ -5928,8 +5946,10 @@
         }
         const date = extractDateFromOcr(attachment.ocrText);
         const dateInput = row.querySelector("[data-vaccine-date]");
+        const lotInput = row.querySelector("[data-vaccine-lot]");
         const noteInput = row.querySelector("[data-vaccine-note]");
         if (date && dateInput) dateInput.value = date;
+        if (lotInput && !lotInput.value.trim()) lotInput.value = extractOcrValue(attachment.ocrText, ["lote"]);
         if (noteInput && !noteInput.value.trim()) {
           noteInput.value = firstMeaningfulOcrText(attachment.ocrText).slice(0, 140);
         }
@@ -5945,6 +5965,7 @@
       const row = document.querySelector(`[data-vaccine-id="${vaccineId}"]`);
       if (!vaccine || !row) return;
       const dateValue = row.querySelector("[data-vaccine-date]")?.value || "";
+      const lot = row.querySelector("[data-vaccine-lot]")?.value.trim() || "";
       const note = row.querySelector("[data-vaccine-note]")?.value.trim() || "";
       const date = parseDateInput(dateValue);
       if (!date) {
@@ -5976,11 +5997,14 @@
         type: "vacunacion",
         timestamp,
         specialist: "Vacunatorio",
-        summary: note ? `${vaccine.name}. ${note}` : vaccine.name,
+        summary: [vaccine.name, vaccine.dose, lot ? `Lote ${lot}` : "", note].filter(Boolean).join(" · "),
         structuredFields: normalizeStructuredFields([
+          { id: "edad_sugerida", label: "Edad", value: vaccine.timing },
           { id: "vacuna", label: "Vacuna", value: vaccine.name },
-          { id: "edad_sugerida", label: "Cuándo", value: vaccine.timing },
+          { id: "dosis", label: "Dosis", value: vaccine.dose || "" },
           { id: "fecha_aplicada", label: "Fecha aplicada", value: dateValue },
+          { id: "lote", label: "Lote", value: lot },
+          { id: "sello_firma", label: "Sello y firma", value: note },
           { id: "observaciones", label: "Observaciones", value: note }
         ]),
         attachments: mergeMedicalAttachments(existing?.attachments || [], newAttachments),
