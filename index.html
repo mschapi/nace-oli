@@ -1909,6 +1909,45 @@
       gap: 8px;
     }
 
+    .medical-card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .appointment-edit-form {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(92, 134, 102, 0.28);
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
+    .appointment-edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .appointment-edit-form textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .appointment-danger {
+      border-color: rgba(190, 62, 62, 0.6) !important;
+      background: #be3e3e !important;
+      color: #fff !important;
+    }
+
+    .appointment-cancelled {
+      border-color: rgba(190, 62, 62, 0.28);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
     .attachment-button {
       min-height: 34px;
       max-width: 100%;
@@ -6197,7 +6236,15 @@
     }
 
     function isPastAppointment(record) {
-      return record?.type === "turno" && controlDayKey(record.timestamp) < todayBuenosAiresDateKey();
+      return record?.type === "turno" && !isCancelledAppointment(record) && controlDayKey(record.timestamp) < todayBuenosAiresDateKey();
+    }
+
+    function appointmentStatus(record) {
+      return normalizeMedicalKey(structuredFieldValue(record, "appointment_status"));
+    }
+
+    function isCancelledAppointment(record) {
+      return record?.type === "turno" && ["cancelado", "cancelled", "canceled"].includes(appointmentStatus(record));
     }
 
     function appointmentEmails() {
@@ -6231,6 +6278,138 @@
         createdAt: nowIso,
         updatedAt: nowIso
       };
+    }
+
+    function findMedicalRecord(recordId) {
+      return medicalRecords.find((record) => record.id === recordId) || null;
+    }
+
+    function replaceAppointmentFields(record, fields, removeIds = []) {
+      const remove = new Set(removeIds);
+      const kept = normalizeStructuredFields(record.structuredFields).filter((field) => !remove.has(field.id));
+      return mergeStructuredFields(kept, fields);
+    }
+
+    function updateAppointmentRecord(recordId, updater) {
+      const existing = findMedicalRecord(recordId);
+      if (!existing) return null;
+      const updated = normalizeMedicalRecord(updater(existing));
+      if (!updated) return null;
+      medicalRecords = medicalRecords.map((record) => (record.id === recordId ? updated : record));
+      saveMedicalRecords();
+      return updated;
+    }
+
+    function renderAppointmentActions(record) {
+      if (record.type !== "turno") return "";
+      const cancelled = isCancelledAppointment(record);
+      if (editingAppointmentId === record.id) {
+        return `
+          <form class="appointment-edit-form" data-appointment-edit-form="${escapeHtml(record.id)}">
+            <div class="appointment-edit-grid">
+              <label class="edit-field">
+                <span>Fecha y hora</span>
+                <input name="appointmentDate" type="datetime-local" min="${escapeHtml(minAppointmentDateTime())}" value="${escapeHtml(toBuenosAiresInput(record.timestamp).slice(0, 16))}" required>
+              </label>
+              <label class="edit-field">
+                <span>Tipo</span>
+                <input name="appointmentType" type="text" list="medicalSpecialistOptions" value="${escapeHtml(appointmentType(record))}" required>
+              </label>
+            </div>
+            <label class="edit-field">
+              <span>Nota</span>
+              <textarea name="appointmentNote">${escapeHtml(record.summary || "")}</textarea>
+            </label>
+            <div class="medical-card-actions">
+              <button class="control-secondary" type="submit">Guardar cambios</button>
+              <button class="control-secondary" type="button" data-close-appointment-edit="${escapeHtml(record.id)}">Cerrar edición</button>
+            </div>
+          </form>
+        `;
+      }
+      return `
+        <div class="medical-card-actions">
+          <button class="control-secondary" type="button" data-edit-appointment="${escapeHtml(record.id)}">${cancelled ? "Reagendar" : "Editar / reagendar"}</button>
+          ${cancelled ? "" : `<button class="control-secondary" type="button" data-resend-appointment="${escapeHtml(record.id)}">Reenviar mail</button>`}
+          ${cancelled ? "" : `<button class="control-secondary appointment-danger" type="button" data-cancel-appointment="${escapeHtml(record.id)}">Cancelar turno</button>`}
+        </div>
+      `;
+    }
+
+    async function cancelAppointment(recordId) {
+      const record = findMedicalRecord(recordId);
+      if (!record || record.type !== "turno") return;
+      const ok = window.confirm(`Cancelar el turno ${appointmentType(record)} del ${medicalDateLabel(record.timestamp)}?`);
+      if (!ok) return;
+      const nowIso = new Date().toISOString();
+      updateAppointmentRecord(recordId, (item) => ({
+        ...item,
+        structuredFields: replaceAppointmentFields(item, [
+          { id: "appointment_status", label: "Estado turno", value: "cancelado" },
+          { id: "appointment_cancelled_at", label: "Cancelado", value: nowIso },
+          { id: "calendar_status", label: "Calendar", value: "cancelando" },
+          { id: "calendar_mail_status", label: "Mail", value: "pendiente cancelación" }
+        ], ["appointment_status", "appointment_cancelled_at", "calendar_status", "calendar_mail_status"]),
+        updatedAt: nowIso
+      }));
+      editingAppointmentId = null;
+      renderMedical();
+      await syncMedicalState("medicalSyncStatus", "Turno cancelado y sincronizado.");
+    }
+
+    async function resendAppointmentMail(recordId) {
+      const nowIso = new Date().toISOString();
+      const updated = updateAppointmentRecord(recordId, (item) => ({
+        ...item,
+        structuredFields: mergeStructuredFields(item.structuredFields, [
+          { id: "mail_requested_at", label: "Mail solicitado", value: nowIso },
+          { id: "calendar_mail_status", label: "Mail", value: "reenviando" },
+          { id: "invitados", label: "Invitados", value: appointmentEmails().join(", ") }
+        ]),
+        updatedAt: nowIso
+      }));
+      if (!updated) return;
+      renderMedical();
+      await syncMedicalState("medicalSyncStatus", "Reenvío de mail solicitado.");
+    }
+
+    async function saveAppointmentEdit(form) {
+      const recordId = form.dataset.appointmentEditForm;
+      const dateValue = form.elements.appointmentDate.value;
+      const typeValue = form.elements.appointmentType.value.trim();
+      const note = form.elements.appointmentNote.value.trim();
+      const timestamp = fromBuenosAiresInput(dateValue);
+      if (!Number.isFinite(timestamp)) {
+        setInlineStatus("medicalSyncStatus", "Elegí fecha y hora válidas.", true);
+        return;
+      }
+      if (dateValue.slice(0, 10) < todayBuenosAiresDateKey()) {
+        setInlineStatus("medicalSyncStatus", "El turno tiene que ser hoy o una fecha futura.", true);
+        return;
+      }
+      if (!typeValue) {
+        setInlineStatus("medicalSyncStatus", "Poné qué tipo de turno es.", true);
+        return;
+      }
+      const nowIso = new Date().toISOString();
+      const updated = updateAppointmentRecord(recordId, (item) => ({
+        ...item,
+        timestamp,
+        specialist: typeValue,
+        summary: note || `Turno agendado: ${typeValue}`,
+        structuredFields: replaceAppointmentFields(item, [
+          { id: "tipo_turno", label: "Tipo", value: typeValue },
+          { id: "invitados", label: "Invitados", value: appointmentEmails().join(", ") },
+          { id: "calendar_status", label: "Calendar", value: "reagendando" },
+          { id: "calendar_mail_status", label: "Mail", value: "pendiente" }
+        ], ["appointment_status", "appointment_cancelled_at", "calendar_status", "calendar_mail_status"]),
+        updatedAt: nowIso
+      }));
+      if (!updated) return;
+      editingAppointmentId = null;
+      medicalFilter = "turnos";
+      renderMedical();
+      await syncMedicalState("medicalSyncStatus", "Turno reagendado y sincronizado.");
     }
 
     function readAppointmentDraft(config) {
@@ -6272,7 +6451,7 @@
 
     function medicalRecordMatchesFilter(record) {
       if (medicalFilter === "turnos") {
-        return record.type === "turno" && (!isPastAppointment(record) || medicalSearchTerm.trim());
+        return record.type === "turno" && ((!isPastAppointment(record) && !isCancelledAppointment(record)) || medicalSearchTerm.trim());
       }
       if (medicalFilter === "estudios") return isMedicalStudy(record.type);
       if (medicalFilter === "vacunacion") return record.type === "vacunacion";
@@ -6475,7 +6654,7 @@
       const consults = medicalRecords.filter((record) => record.type === "consulta");
       const vaccines = medicalRecords.filter((record) => record.type === "vacunacion");
       const studies = medicalRecords.filter((record) => isMedicalStudy(record.type));
-      const appointments = medicalRecords.filter((record) => record.type === "turno" && !isPastAppointment(record));
+      const appointments = medicalRecords.filter((record) => record.type === "turno" && !isPastAppointment(record) && !isCancelledAppointment(record));
       const attachmentCount = medicalRecords.reduce((sum, record) => sum + record.attachments.length, 0);
       document.getElementById("medicalConsultCount").textContent = String(consults.length);
       document.getElementById("medicalVaccineCount").textContent = String(vaccines.length);
@@ -6514,9 +6693,12 @@
         const summary = record.summary ? `<p>${escapeHtml(record.summary)}</p>` : "";
         const structured = renderMedicalStructuredList(record.structuredFields);
         const calendarStatus = record.type === "turno" ? structuredFieldValue(record, "calendar_status") : "";
-        const calendarBadge = calendarStatus
-          ? `<span class="medical-ocr-pill">${escapeHtml(calendarStatus)}</span>`
-          : "";
+        const calendarMailStatus = record.type === "turno" ? structuredFieldValue(record, "calendar_mail_status") : "";
+        const cancelled = isCancelledAppointment(record);
+        const calendarBadge = [cancelled ? "turno cancelado" : "", calendarStatus, calendarMailStatus]
+          .filter(Boolean)
+          .map((status) => `<span class="medical-ocr-pill">${escapeHtml(status)}</span>`)
+          .join("");
         const attachments = record.attachments.length
           ? `<div class="medical-attachments">${record.attachments.map((attachment) => {
               const downloadUrl = attachmentDownloadUrl(attachment);
@@ -6532,7 +6714,7 @@
             }).join("")}</div>`
           : "";
         return `
-          <article class="medical-card">
+          <article class="medical-card ${cancelled ? "appointment-cancelled" : ""}">
             <div class="medical-card-head">
               <div>
                 <h3>${escapeHtml(medicalTypeLabel(record.type))}</h3>
@@ -6545,6 +6727,7 @@
             ${calendarBadge}
             ${structured}
             ${attachments}
+            ${renderAppointmentActions(record)}
           </article>
         `;
       }).join("");
@@ -8328,6 +8511,7 @@
     let medicalRecords = loadMedicalRecords();
     let medicalFilter = "consulta";
     let medicalSearchTerm = "";
+    let editingAppointmentId = null;
     const diaperDraft = { pee: false, poop: false };
 
     function reloadProfileScopedState() {
@@ -8479,8 +8663,34 @@
       if (fileInput) handleVaccineFilePrefill(fileInput.closest("[data-vaccine-id]"));
     });
     document.getElementById("medicalRecordList").addEventListener("click", (event) => {
-      const button = event.target.closest("[data-medical-record][data-medical-attachment]");
-      if (button) openMedicalAttachment(button.dataset.medicalRecord, button.dataset.medicalAttachment);
+      const attachmentButton = event.target.closest("[data-medical-record][data-medical-attachment]");
+      const editButton = event.target.closest("[data-edit-appointment]");
+      const closeEditButton = event.target.closest("[data-close-appointment-edit]");
+      const cancelButton = event.target.closest("[data-cancel-appointment]");
+      const resendButton = event.target.closest("[data-resend-appointment]");
+      if (attachmentButton) {
+        openMedicalAttachment(attachmentButton.dataset.medicalRecord, attachmentButton.dataset.medicalAttachment);
+      }
+      if (editButton) {
+        editingAppointmentId = editButton.dataset.editAppointment;
+        renderMedical();
+      }
+      if (closeEditButton) {
+        editingAppointmentId = null;
+        renderMedical();
+      }
+      if (cancelButton) {
+        cancelAppointment(cancelButton.dataset.cancelAppointment);
+      }
+      if (resendButton) {
+        resendAppointmentMail(resendButton.dataset.resendAppointment);
+      }
+    });
+    document.getElementById("medicalRecordList").addEventListener("submit", (event) => {
+      const form = event.target.closest("[data-appointment-edit-form]");
+      if (!form) return;
+      event.preventDefault();
+      saveAppointmentEdit(form);
     });
     document.getElementById("closeMedicalPreview").addEventListener("click", () => {
       document.getElementById("medicalPreviewDialog").close();
