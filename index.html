@@ -1488,7 +1488,7 @@
 
     .medical-summary {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
       gap: 10px;
       margin: 26px 0 18px;
     }
@@ -1674,7 +1674,59 @@
     }
 
     .vaccination-table {
-      min-width: 1120px;
+      min-width: 1320px;
+      table-layout: fixed;
+    }
+
+    .vaccination-table th,
+    .vaccination-table td {
+      padding: 12px 14px;
+      vertical-align: top;
+      white-space: normal;
+    }
+
+    .vaccination-table th:nth-child(1),
+    .vaccination-table td:nth-child(1) {
+      width: 130px;
+    }
+
+    .vaccination-table th:nth-child(2),
+    .vaccination-table td:nth-child(2) {
+      width: 210px;
+    }
+
+    .vaccination-table th:nth-child(3),
+    .vaccination-table td:nth-child(3) {
+      width: 90px;
+    }
+
+    .vaccination-table th:nth-child(4),
+    .vaccination-table td:nth-child(4) {
+      width: 160px;
+    }
+
+    .vaccination-table th:nth-child(8),
+    .vaccination-table td:nth-child(8) {
+      width: 160px;
+    }
+
+    .vaccination-table tr.vaccine-applied td {
+      background: #edf7ef;
+    }
+
+    .vaccination-table tr.vaccine-applied td:first-child {
+      box-shadow: inset 4px 0 0 var(--leaf);
+    }
+
+    .vaccine-actions {
+      display: grid;
+      gap: 7px;
+    }
+
+    .control-secondary.subtle-danger {
+      border-color: rgba(175, 75, 75, 0.32);
+      color: #8d3f3f;
+      background: #fff7f5;
     }
 
     .vaccination-table input[type="date"],
@@ -1692,6 +1744,63 @@
       border-radius: 6px;
       color: var(--ink);
       background: #fff;
+    }
+
+    .appointment-inline-grid {
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) minmax(160px, 1fr);
+      gap: 10px;
+    }
+
+    .appointment-float {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      width: min(310px, calc(100vw - 28px));
+      padding: 12px;
+      border: 1px solid rgba(92, 134, 102, 0.28);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 18px 42px rgba(23, 33, 27, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .appointment-float[hidden] {
+      display: none;
+    }
+
+    .appointment-float-handle {
+      width: 100%;
+      min-height: 34px;
+      margin: 0 0 10px;
+      border: 0;
+      border-radius: 7px;
+      background: #e9f3ec;
+      color: var(--leaf);
+      cursor: grab;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .appointment-float.dragging .appointment-float-handle {
+      cursor: grabbing;
+    }
+
+    .appointment-float-form {
+      display: grid;
+      gap: 9px;
+    }
+
+    .appointment-float-form textarea {
+      min-height: 66px;
+      resize: vertical;
+    }
+
+    .appointment-float-form .control-submit {
+      min-height: 40px;
     }
 
     .medical-record-list {
@@ -2384,6 +2493,10 @@
         grid-template-columns: 1fr;
       }
 
+      .appointment-inline-grid {
+        grid-template-columns: 1fr;
+      }
+
       .medical-extra-head {
         align-items: flex-start;
         flex-direction: column;
@@ -2566,6 +2679,16 @@
             <label class="edit-field">
               <span>Mapadre 2</span>
               <input id="profileParentTwo" type="text" autocomplete="name" placeholder="Nombre">
+            </label>
+          </div>
+          <div class="profile-two-cols">
+            <label class="edit-field">
+              <span>Mail mapadre 1</span>
+              <input id="profileParentOneEmail" type="email" autocomplete="email" placeholder="mapadre1@mail.com">
+            </label>
+            <label class="edit-field">
+              <span>Mail mapadre 2</span>
+              <input id="profileParentTwoEmail" type="email" autocomplete="email" placeholder="mapadre2@mail.com">
             </label>
           </div>
           <div class="profile-two-cols">
@@ -3057,6 +3180,10 @@
           <strong id="medicalStudyCount">0</strong>
         </div>
         <div class="control-count">
+          <span>Turnos</span>
+          <strong id="medicalAppointmentCount">0</strong>
+        </div>
+        <div class="control-count">
           <span>Adjuntos</span>
           <strong id="medicalAttachmentCount">0</strong>
         </div>
@@ -3101,6 +3228,22 @@
               </div>
               <div class="medical-extra-grid" id="medicalConsultStructuredFields"></div>
             </section>
+            <section class="medical-extra-panel" aria-labelledby="medicalConsultNextTitle">
+              <div class="medical-extra-head">
+                <span id="medicalConsultNextTitle">Próximo turno</span>
+                <small>Opcional. Se agenda en Calendar con los mails de mapadres.</small>
+              </div>
+              <div class="appointment-inline-grid">
+                <label class="edit-field">
+                  <span>Fecha y hora</span>
+                  <input id="medicalConsultNextDate" type="datetime-local" step="60">
+                </label>
+                <label class="edit-field">
+                  <span>Tipo</span>
+                  <input id="medicalConsultNextType" type="text" list="medicalSpecialistOptions" placeholder="Pediatra, laboratorio...">
+                </label>
+              </div>
+            </section>
             <label class="edit-field birth-file">
               <span>Adjuntos opcionales</span>
               <input id="medicalConsultFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
@@ -3139,6 +3282,22 @@
               <span>Resumen</span>
               <textarea id="medicalStudySummary" placeholder="Resultado, indicación o comentario opcional..."></textarea>
             </label>
+            <section class="medical-extra-panel" aria-labelledby="medicalStudyNextTitle">
+              <div class="medical-extra-head">
+                <span id="medicalStudyNextTitle">Próximo estudio o turno</span>
+                <small>Opcional. Se guarda en turnos y se invita por Calendar.</small>
+              </div>
+              <div class="appointment-inline-grid">
+                <label class="edit-field">
+                  <span>Fecha y hora</span>
+                  <input id="medicalStudyNextDate" type="datetime-local" step="60">
+                </label>
+                <label class="edit-field">
+                  <span>Tipo</span>
+                  <input id="medicalStudyNextType" type="text" list="medicalSpecialistOptions" placeholder="Laboratorio, eco, pediatra...">
+                </label>
+              </div>
+            </section>
             <label class="edit-field birth-file">
               <span>Adjuntos opcionales</span>
               <input id="medicalStudyFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt,.csv">
@@ -3162,6 +3321,7 @@
               <button class="active" type="button" data-medical-filter="consulta">Consultas</button>
               <button type="button" data-medical-filter="vacunacion">Vacunas</button>
               <button type="button" data-medical-filter="estudios">Estudios</button>
+              <button type="button" data-medical-filter="turnos">Turnos</button>
             </div>
           </div>
         </div>
@@ -3195,6 +3355,25 @@
         </section>
         <p class="control-empty" id="medicalEmpty">La primera consulta o estudio va a aparecer acá.</p>
         <div class="medical-record-list" id="medicalRecordList"></div>
+      </section>
+      <section class="appointment-float" id="appointmentFloat" aria-label="Agendar turno rápido">
+        <button class="appointment-float-handle" id="appointmentFloatHandle" type="button">Agendar</button>
+        <form class="appointment-float-form" id="floatingAppointmentForm">
+          <label class="edit-field">
+            <span>Fecha y hora</span>
+            <input id="floatingAppointmentDate" type="datetime-local" step="60" required>
+          </label>
+          <label class="edit-field">
+            <span>Tipo</span>
+            <input id="floatingAppointmentType" type="text" list="medicalSpecialistOptions" placeholder="Pediatra, laboratorio..." required>
+          </label>
+          <label class="edit-field">
+            <span>Nota opcional</span>
+            <textarea id="floatingAppointmentNote" placeholder="Lugar, indicación o algo para recordar"></textarea>
+          </label>
+          <button class="control-submit" type="submit">Guardar turno</button>
+          <p class="announcement-status" id="floatingAppointmentStatus" aria-live="polite">Se sincroniza y se invita por Calendar.</p>
+        </form>
       </section>
     </main>
   </section>
@@ -3422,6 +3601,8 @@
       profileSlug: "olivia",
       parentOne: "",
       parentTwo: "",
+      parentOneEmail: "",
+      parentTwoEmail: "",
       babyName: "Oli",
       babyFullName: "Olivia Schapiro",
       lmpDate: "2025-10-08",
@@ -3440,6 +3621,7 @@
     const MEDICAL_TYPE_LABELS = {
       consulta: "Consulta",
       vacunacion: "Vacunación",
+      turno: "Turno",
       laboratorio: "Laboratorio",
       analisis: "Análisis",
       imagen: "Imagen",
@@ -3532,6 +3714,7 @@
         { id: "indicaciones", label: "Indicaciones", placeholder: "Qué dijo el médico" }
       ]
     };
+    const APPOINTMENT_DEFAULT_DURATION_MINUTES = 60;
     const MEDICAL_OCR_AUTOFILL_CONFIDENCE = 70;
     const pendingMedicalAttachments = {};
     const VACCINE_TEMPLATE = [
@@ -3751,6 +3934,8 @@
         profileSlug,
         parentOne: String(raw.parentOne || DEFAULT_PROFILE.parentOne).trim(),
         parentTwo: String(raw.parentTwo || DEFAULT_PROFILE.parentTwo).trim(),
+        parentOneEmail: String(raw.parentOneEmail || DEFAULT_PROFILE.parentOneEmail).trim(),
+        parentTwoEmail: String(raw.parentTwoEmail || DEFAULT_PROFILE.parentTwoEmail).trim(),
         babyName,
         babyFullName: String(raw.babyFullName || babyName || DEFAULT_PROFILE.babyFullName).trim(),
         lmpDate,
@@ -3810,7 +3995,9 @@
         babyName: titleFromSlug(slug),
         babyFullName: titleFromSlug(slug),
         babyStage: "en_panza",
-        email: ""
+        email: "",
+        parentOneEmail: "",
+        parentTwoEmail: ""
       });
     }
 
@@ -3918,6 +4105,10 @@
       status.classList.toggle("error", isError);
     }
 
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+    }
+
     function effectiveDueDate() {
       return parseDateInput(currentProfile().dueDate) || parseDateInput(DEFAULT_PROFILE.dueDate);
     }
@@ -3946,6 +4137,8 @@
         profileSlug: profile.profileSlug,
         parentOne: profile.parentOne,
         parentTwo: profile.parentTwo,
+        parentOneEmail: profile.parentOneEmail,
+        parentTwoEmail: profile.parentTwoEmail,
         babyName: profile.babyName,
         babyFullName: profile.babyFullName,
         lmpDate: profile.lmpDate,
@@ -4105,6 +4298,8 @@
       setValue("profileSlug", profile.profileSlug);
       setValue("profileParentOne", profile.parentOne);
       setValue("profileParentTwo", profile.parentTwo);
+      setValue("profileParentOneEmail", profile.parentOneEmail);
+      setValue("profileParentTwoEmail", profile.parentTwoEmail);
       setValue("profileBabyName", profile.babyName);
       setValue("profileBabyFullName", profile.babyFullName);
       setValue("profileLmpDate", profile.lmpDate);
@@ -4153,13 +4348,23 @@
     async function handleFamilyProfileSubmit(event) {
       event.preventDefault();
       const email = document.getElementById("profileEmail").value.trim();
+      const parentOneEmail = document.getElementById("profileParentOneEmail").value.trim();
+      const parentTwoEmail = document.getElementById("profileParentTwoEmail").value.trim();
       const baby = document.getElementById("profileBabyName").value.trim();
       const dueDate = document.getElementById("profileDueDate").value;
       const babyStage = document.getElementById("profileBabyStage").value;
       const birthDateTime = document.getElementById("profileBirthDateTime").value;
       const selectedSlug = slugify(document.getElementById("profileSlug").value || baby);
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (email && !isValidEmail(email)) {
         setProfileStatus("Si cargás mail, poné uno válido.", true);
+        return;
+      }
+      if (parentOneEmail && !isValidEmail(parentOneEmail)) {
+        setProfileStatus("El mail de mapadre 1 no parece válido.", true);
+        return;
+      }
+      if (parentTwoEmail && !isValidEmail(parentTwoEmail)) {
+        setProfileStatus("El mail de mapadre 2 no parece válido.", true);
         return;
       }
       if (!baby) {
@@ -4214,6 +4419,8 @@
           profileSlug: selectedSlug,
           parentOne: document.getElementById("profileParentOne").value,
           parentTwo: document.getElementById("profileParentTwo").value,
+          parentOneEmail,
+          parentTwoEmail,
           babyName: baby,
           babyFullName: document.getElementById("profileBabyFullName").value || baby,
           lmpDate: document.getElementById("profileLmpDate").value,
@@ -5321,6 +5528,13 @@
       }).filter(Boolean);
     }
 
+    function mergeStructuredFields(existing, incoming) {
+      const fields = new Map();
+      normalizeStructuredFields(existing).forEach((field) => fields.set(field.id, field));
+      normalizeStructuredFields(incoming).forEach((field) => fields.set(field.id, field));
+      return Array.from(fields.values());
+    }
+
     function renderMedicalStructuredFields() {
       const input = document.getElementById("medicalConsultSpecialist");
       const container = document.getElementById("medicalConsultStructuredFields");
@@ -5599,9 +5813,7 @@
           items.set(normalized.id, normalized);
           return;
         }
-        const structuredFields = normalized.structuredFields.length
-          ? normalized.structuredFields
-          : (previous.structuredFields || []);
+        const structuredFields = mergeStructuredFields(previous.structuredFields, normalized.structuredFields);
         items.set(normalized.id, {
           ...previous,
           ...normalized,
@@ -5649,6 +5861,12 @@
       ["medicalConsultDate", "medicalStudyDate"].forEach((id) => {
         const input = document.getElementById(id);
         if (input && !input.value) input.value = value;
+      });
+      ["medicalConsultNextDate", "medicalStudyNextDate", "floatingAppointmentDate"].forEach((id) => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.min = minAppointmentDateTime();
+        if (id === "floatingAppointmentDate" && !input.value) input.value = value;
       });
     }
 
@@ -5848,8 +6066,80 @@
       return MEDICAL_TYPE_LABELS[type] || "Otro";
     }
 
+    function todayBuenosAiresDateKey() {
+      return toBuenosAiresInput(Date.now()).slice(0, 10);
+    }
+
+    function minAppointmentDateTime() {
+      return `${todayBuenosAiresDateKey()}T00:00`;
+    }
+
+    function structuredFieldValue(record, fieldId) {
+      const field = normalizeStructuredFields(record?.structuredFields).find((item) => item.id === fieldId);
+      return field ? field.value : "";
+    }
+
+    function appointmentType(record) {
+      return structuredFieldValue(record, "tipo_turno") || record.specialist || "Turno";
+    }
+
+    function isPastAppointment(record) {
+      return record?.type === "turno" && controlDayKey(record.timestamp) < todayBuenosAiresDateKey();
+    }
+
+    function appointmentEmails() {
+      const profile = currentProfile();
+      return Array.from(new Set([
+        profile.parentOneEmail,
+        profile.parentTwoEmail
+      ].map((email) => String(email || "").trim()).filter(isValidEmail)));
+    }
+
+    function appointmentRecordFromValues({ timestamp, appointmentType: type, note = "", sourceType = "manual", sourceId = "" }) {
+      const cleanType = String(type || "").trim().slice(0, 120);
+      const cleanNote = String(note || "").trim().slice(0, 600);
+      const nowIso = new Date().toISOString();
+      const title = cleanType || "Turno";
+      return {
+        id: makeId(),
+        type: "turno",
+        timestamp,
+        specialist: title,
+        summary: cleanNote || `Turno agendado: ${title}`,
+        structuredFields: normalizeStructuredFields([
+          { id: "tipo_turno", label: "Tipo", value: title },
+          { id: "origen", label: "Origen", value: sourceType },
+          { id: "origen_id", label: "Registro origen", value: sourceId },
+          { id: "invitados", label: "Invitados", value: appointmentEmails().join(", ") }
+        ]),
+        attachments: [],
+        deviceId: getDeviceId(),
+        profileSlug: currentProfileSlug(),
+        createdAt: nowIso,
+        updatedAt: nowIso
+      };
+    }
+
+    function readAppointmentDraft(config) {
+      if (!config.nextDateId || !config.nextTypeId) return null;
+      const dateValue = document.getElementById(config.nextDateId)?.value || "";
+      const typeValue = document.getElementById(config.nextTypeId)?.value.trim() || "";
+      if (!dateValue && !typeValue) return null;
+      if (!dateValue || !typeValue) {
+        return { error: "Para agendar el próximo turno completá fecha y tipo." };
+      }
+      const timestamp = fromBuenosAiresInput(dateValue);
+      if (!Number.isFinite(timestamp)) {
+        return { error: "La fecha del próximo turno no es válida." };
+      }
+      if (dateValue.slice(0, 10) < todayBuenosAiresDateKey()) {
+        return { error: "El próximo turno tiene que ser hoy o una fecha futura." };
+      }
+      return { timestamp, typeValue };
+    }
+
     function isMedicalStudy(type) {
-      return !["consulta", "vacunacion"].includes(type);
+      return !["consulta", "vacunacion", "turno"].includes(type);
     }
 
     function medicalSearchText(record) {
@@ -5868,6 +6158,9 @@
     }
 
     function medicalRecordMatchesFilter(record) {
+      if (medicalFilter === "turnos") {
+        return record.type === "turno" && (!isPastAppointment(record) || medicalSearchTerm.trim());
+      }
       if (medicalFilter === "estudios") return isMedicalStudy(record.type);
       if (medicalFilter === "vacunacion") return record.type === "vacunacion";
       return record.type === medicalFilter;
@@ -5887,17 +6180,16 @@
     }
 
     function vaccineFieldValue(record, fieldId) {
-      const field = normalizeStructuredFields(record?.structuredFields).find((item) => item.id === fieldId);
-      return field ? field.value : "";
+      return structuredFieldValue(record, fieldId);
     }
 
     function renderVaccinationTable() {
       const rows = document.getElementById("vaccinationRows");
       if (!rows) return;
+      const maxDate = todayBuenosAiresDateKey();
       rows.innerHTML = VACCINE_TEMPLATE.map((vaccine) => {
         const record = vaccineRecordFor(vaccine.id);
-        const defaultDate = isLegacyOliProfile() ? vaccine.defaultDate : "";
-        const date = vaccineFieldValue(record, "fecha_aplicada") || (record ? toBuenosAiresInput(record.timestamp).slice(0, 10) : "") || defaultDate || "";
+        const date = vaccineFieldValue(record, "fecha_aplicada") || (record ? toBuenosAiresInput(record.timestamp).slice(0, 10) : "") || "";
         const lot = vaccineFieldValue(record, "lote");
         const stamp = vaccineFieldValue(record, "sello_firma");
         const note = vaccineFieldValue(record, "observaciones");
@@ -5913,18 +6205,23 @@
             }).join("")}</div>`
           : "";
         return `
-          <tr data-vaccine-id="${escapeHtml(vaccine.id)}">
+          <tr data-vaccine-id="${escapeHtml(vaccine.id)}" class="${date ? "vaccine-applied" : ""}">
             <td>${escapeHtml(vaccine.timing)}</td>
             <td><strong>${escapeHtml(vaccine.name)}</strong></td>
             <td>${escapeHtml(vaccine.dose || "")}</td>
-            <td><input type="date" data-vaccine-date value="${escapeHtml(date)}"></td>
+            <td><input type="date" data-vaccine-date value="${escapeHtml(date)}" max="${escapeHtml(maxDate)}"></td>
             <td><input type="text" data-vaccine-lot value="${escapeHtml(lot)}" placeholder="Lote"></td>
             <td><input type="text" data-vaccine-note value="${escapeHtml(stamp || note)}" placeholder="Sello, firma o nota..."></td>
             <td>
               <input type="file" data-vaccine-file accept="image/*,.pdf,.doc,.docx,.txt">
               ${attachments}
             </td>
-            <td><button class="control-secondary" type="button" data-save-vaccine="${escapeHtml(vaccine.id)}">Guardar</button></td>
+            <td>
+              <div class="vaccine-actions">
+                <button class="control-secondary" type="button" data-save-vaccine="${escapeHtml(vaccine.id)}">Guardar</button>
+                <button class="control-secondary subtle-danger" type="button" data-clear-vaccine="${escapeHtml(vaccine.id)}" ${record ? "" : "disabled"}>Borrar</button>
+              </div>
+            </td>
           </tr>
         `;
       }).join("");
@@ -5960,6 +6257,22 @@
       }
     }
 
+    async function clearVaccineRow(vaccineId) {
+      const existing = vaccineRecordFor(vaccineId);
+      if (!existing) {
+        const row = document.querySelector(`[data-vaccine-id="${vaccineId}"]`);
+        const dateInput = row ? row.querySelector("[data-vaccine-date]") : null;
+        if (dateInput) dateInput.value = "";
+        setInlineStatus("vaccinationStatus", "No había una fecha guardada para esa vacuna.");
+        renderVaccinationTable();
+        return;
+      }
+      medicalRecords = medicalRecords.filter((item) => item.id !== existing.id);
+      saveMedicalRecords();
+      renderMedical();
+      await syncMedicalState("vaccinationStatus", "Fecha de vacuna borrada y sincronizada.");
+    }
+
     async function saveVaccineRow(vaccineId) {
       const vaccine = VACCINE_TEMPLATE.find((item) => item.id === vaccineId);
       const row = document.querySelector(`[data-vaccine-id="${vaccineId}"]`);
@@ -5968,8 +6281,16 @@
       const lot = row.querySelector("[data-vaccine-lot]")?.value.trim() || "";
       const note = row.querySelector("[data-vaccine-note]")?.value.trim() || "";
       const date = parseDateInput(dateValue);
+      if (!dateValue) {
+        await clearVaccineRow(vaccineId);
+        return;
+      }
       if (!date) {
-        setInlineStatus("vaccinationStatus", "Elegí la fecha aplicada antes de guardar.", true);
+        setInlineStatus("vaccinationStatus", "Elegí una fecha aplicada válida.", true);
+        return;
+      }
+      if (dateValue > todayBuenosAiresDateKey()) {
+        setInlineStatus("vaccinationStatus", "La fecha aplicada no puede ser futura.", true);
         return;
       }
 
@@ -6041,10 +6362,12 @@
       const consults = medicalRecords.filter((record) => record.type === "consulta");
       const vaccines = medicalRecords.filter((record) => record.type === "vacunacion");
       const studies = medicalRecords.filter((record) => isMedicalStudy(record.type));
+      const appointments = medicalRecords.filter((record) => record.type === "turno" && !isPastAppointment(record));
       const attachmentCount = medicalRecords.reduce((sum, record) => sum + record.attachments.length, 0);
       document.getElementById("medicalConsultCount").textContent = String(consults.length);
       document.getElementById("medicalVaccineCount").textContent = String(vaccines.length);
       document.getElementById("medicalStudyCount").textContent = String(studies.length);
+      document.getElementById("medicalAppointmentCount").textContent = String(appointments.length);
       document.getElementById("medicalAttachmentCount").textContent = String(attachmentCount);
 
       document.querySelectorAll("[data-medical-filter]").forEach((button) => {
@@ -6060,13 +6383,15 @@
       const filtered = medicalRecords
         .filter(medicalRecordMatchesFilter)
         .filter(medicalRecordMatchesSearch)
-        .sort((a, b) => b.timestamp - a.timestamp);
+        .sort((a, b) => medicalFilter === "turnos" ? a.timestamp - b.timestamp : b.timestamp - a.timestamp);
       const empty = document.getElementById("medicalEmpty");
       empty.textContent = medicalFilter === "vacunacion"
         ? "Las vacunas guardadas van a aparecer acá."
         : medicalFilter === "estudios"
           ? "Los estudios guardados van a aparecer acá."
-          : "Las consultas guardadas van a aparecer acá.";
+          : medicalFilter === "turnos"
+            ? (medicalSearchTerm.trim() ? "No encontré turnos con esa búsqueda." : "Los próximos turnos van a aparecer acá.")
+            : "Las consultas guardadas van a aparecer acá.";
       empty.hidden = filtered.length > 0;
       const list = document.getElementById("medicalRecordList");
       list.innerHTML = filtered.map((record) => {
@@ -6075,6 +6400,10 @@
           : `<span class="medical-specialist">Sin especialista cargado</span>`;
         const summary = record.summary ? `<p>${escapeHtml(record.summary)}</p>` : "";
         const structured = renderMedicalStructuredList(record.structuredFields);
+        const calendarStatus = record.type === "turno" ? structuredFieldValue(record, "calendar_status") : "";
+        const calendarBadge = calendarStatus
+          ? `<span class="medical-ocr-pill">${escapeHtml(calendarStatus)}</span>`
+          : "";
         const attachments = record.attachments.length
           ? `<div class="medical-attachments">${record.attachments.map((attachment) => {
               const downloadUrl = attachmentDownloadUrl(attachment);
@@ -6100,6 +6429,7 @@
             </div>
             ${specialist}
             ${summary}
+            ${calendarBadge}
             ${structured}
             ${attachments}
           </article>
@@ -6113,9 +6443,14 @@
       const summary = document.getElementById(config.summaryId).value.trim();
       const structuredFields = config.structuredFields ? collectMedicalStructuredFields() : [];
       const fileInput = document.getElementById(config.fileId);
+      const appointmentDraft = readAppointmentDraft(config);
 
       if (!Number.isFinite(timestamp)) {
         setInlineStatus(config.statusId, "Elegí una fecha válida.", true);
+        return;
+      }
+      if (appointmentDraft?.error) {
+        setInlineStatus(config.statusId, appointmentDraft.error, true);
         return;
       }
       if (config.requireSpecialist && !specialist) {
@@ -6140,7 +6475,8 @@
       }
       delete pendingMedicalAttachments[config.fileId];
 
-      medicalRecords.push({
+      const nowIso = new Date().toISOString();
+      const record = {
         id: makeId(),
         type: config.type,
         timestamp,
@@ -6150,9 +6486,20 @@
         attachments,
         deviceId: getDeviceId(),
         profileSlug: currentProfileSlug(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+        createdAt: nowIso,
+        updatedAt: nowIso
+      };
+      medicalRecords.push(record);
+
+      if (appointmentDraft) {
+        medicalRecords.push(appointmentRecordFromValues({
+          timestamp: appointmentDraft.timestamp,
+          appointmentType: appointmentDraft.typeValue,
+          note: `Agendado desde ${medicalTypeLabel(config.type).toLowerCase()}${specialist ? ` con ${specialist}` : ""}.`,
+          sourceType: config.type,
+          sourceId: record.id
+        }));
+      }
 
       saveMedicalRecords();
       document.getElementById(config.formId).reset();
@@ -6160,8 +6507,8 @@
       renderMedicalStructuredFields();
       renderMedical();
       await syncMedicalState(config.statusId, attachments.length
-        ? "Registro guardado. Los adjuntos quedan disponibles desde la web."
-        : "Registro guardado y sincronizado.");
+        ? `Registro guardado${appointmentDraft ? " y turno agendado" : ""}. Los adjuntos quedan disponibles desde la web.`
+        : `Registro guardado${appointmentDraft ? " y turno agendado" : ""}.`);
     }
 
     function handleMedicalConsultSubmit(event) {
@@ -6175,7 +6522,9 @@
         fileId: "medicalConsultFiles",
         statusId: "medicalConsultStatus",
         requireSpecialist: true,
-        structuredFields: true
+        structuredFields: true,
+        nextDateId: "medicalConsultNextDate",
+        nextTypeId: "medicalConsultNextType"
       });
     }
 
@@ -6190,8 +6539,76 @@
         fileId: "medicalStudyFiles",
         statusId: "medicalStudyStatus",
         requireSpecialist: false,
-        allowEmptySummary: true
+        allowEmptySummary: true,
+        nextDateId: "medicalStudyNextDate",
+        nextTypeId: "medicalStudyNextType"
       });
+    }
+
+    async function handleFloatingAppointmentSubmit(event) {
+      event.preventDefault();
+      const dateValue = document.getElementById("floatingAppointmentDate").value;
+      const typeValue = document.getElementById("floatingAppointmentType").value.trim();
+      const note = document.getElementById("floatingAppointmentNote").value.trim();
+      const timestamp = fromBuenosAiresInput(dateValue);
+      if (!Number.isFinite(timestamp)) {
+        setInlineStatus("floatingAppointmentStatus", "Elegí fecha y hora válidas.", true);
+        return;
+      }
+      if (dateValue.slice(0, 10) < todayBuenosAiresDateKey()) {
+        setInlineStatus("floatingAppointmentStatus", "El turno tiene que ser hoy o una fecha futura.", true);
+        return;
+      }
+      if (!typeValue) {
+        setInlineStatus("floatingAppointmentStatus", "Poné qué tipo de turno es.", true);
+        return;
+      }
+
+      medicalRecords.push(appointmentRecordFromValues({
+        timestamp,
+        appointmentType: typeValue,
+        note,
+        sourceType: "manual"
+      }));
+      saveMedicalRecords();
+      document.getElementById("floatingAppointmentForm").reset();
+      resetMedicalTimes();
+      medicalFilter = "turnos";
+      renderMedical();
+      await syncMedicalState("floatingAppointmentStatus", "Turno guardado, sincronizado y enviado a Calendar.");
+    }
+
+    function setupAppointmentFloatDrag() {
+      const panel = document.getElementById("appointmentFloat");
+      const handle = document.getElementById("appointmentFloatHandle");
+      if (!panel || !handle) return;
+      let drag = null;
+      handle.addEventListener("pointerdown", (event) => {
+        drag = {
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+          rect: panel.getBoundingClientRect()
+        };
+        panel.classList.add("dragging");
+        handle.setPointerCapture(event.pointerId);
+      });
+      handle.addEventListener("pointermove", (event) => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const nextLeft = Math.min(Math.max(8, drag.rect.left + event.clientX - drag.startX), window.innerWidth - panel.offsetWidth - 8);
+        const nextTop = Math.min(Math.max(8, drag.rect.top + event.clientY - drag.startY), window.innerHeight - panel.offsetHeight - 8);
+        panel.style.left = `${nextLeft}px`;
+        panel.style.top = `${nextTop}px`;
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
+      });
+      const endDrag = (event) => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        panel.classList.remove("dragging");
+        drag = null;
+      };
+      handle.addEventListener("pointerup", endDrag);
+      handle.addEventListener("pointercancel", endDrag);
     }
 
     function openMedicalAttachment(recordId, attachmentId) {
@@ -7892,6 +8309,7 @@
     document.getElementById("controlRangeYesterday").addEventListener("click", () => setControlRange(-1));
     document.getElementById("medicalConsultForm").addEventListener("submit", handleMedicalConsultSubmit);
     document.getElementById("medicalStudyForm").addEventListener("submit", handleMedicalStudySubmit);
+    document.getElementById("floatingAppointmentForm").addEventListener("submit", handleFloatingAppointmentSubmit);
     document.getElementById("medicalConsultSpecialist").addEventListener("input", renderMedicalStructuredFields);
     document.getElementById("medicalConsultSpecialist").addEventListener("change", renderMedicalStructuredFields);
     document.getElementById("medicalConsultFiles").addEventListener("change", () => {
@@ -7912,8 +8330,10 @@
     });
     document.getElementById("vaccinationRows").addEventListener("click", (event) => {
       const saveButton = event.target.closest("[data-save-vaccine]");
+      const clearButton = event.target.closest("[data-clear-vaccine]");
       const attachmentButton = event.target.closest("[data-medical-record][data-medical-attachment]");
       if (saveButton) saveVaccineRow(saveButton.dataset.saveVaccine);
+      if (clearButton) clearVaccineRow(clearButton.dataset.clearVaccine);
       if (attachmentButton) openMedicalAttachment(attachmentButton.dataset.medicalRecord, attachmentButton.dataset.medicalAttachment);
     });
     document.getElementById("vaccinationRows").addEventListener("change", (event) => {
@@ -8066,6 +8486,7 @@
     });
 
     updateBirthAssetButtons();
+    setupAppointmentFloatDrag();
     applyFamilyProfile();
     renderAdminState();
     renderToday();
