@@ -3865,6 +3865,20 @@
       return lmpDate ? formatDateInput(addCalendarDays(lmpDate, 280)) : "";
     }
 
+    function parseFlexibleDate(value) {
+      const text = String(value || "").trim();
+      if (!text) return null;
+      const direct = parseDateInput(text.slice(0, 10));
+      if (direct) return direct;
+      const parsed = new Date(text);
+      return Number.isFinite(parsed.getTime()) ? parsed : null;
+    }
+
+    function normalizeDateInput(value, fallback = "") {
+      const parsed = parseFlexibleDate(value);
+      return parsed ? formatDateInput(parsed) : fallback;
+    }
+
     function slugify(value) {
       return String(value || "")
         .normalize("NFD")
@@ -3925,8 +3939,14 @@
     }
 
     function normalizeDateTimeInput(value) {
-      const text = String(value || "").slice(0, 16);
-      return Number.isFinite(fromBuenosAiresInput(text)) ? text : "";
+      const text = String(value || "").trim();
+      const isoLike = text.match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/);
+      if (isoLike) {
+        const normalized = `${isoLike[1]}T${isoLike[2]}`;
+        return Number.isFinite(fromBuenosAiresInput(normalized)) ? normalized : "";
+      }
+      const parsed = new Date(text);
+      return Number.isFinite(parsed.getTime()) ? toBuenosAiresInput(parsed.getTime()).slice(0, 16) : "";
     }
 
     function normalizeProfileAttachment(item) {
@@ -3943,8 +3963,8 @@
     }
 
     function normalizeProfile(raw = {}) {
-      const lmpDate = parseDateInput(raw.lmpDate) ? raw.lmpDate : DEFAULT_PROFILE.lmpDate;
-      const dueDate = parseDateInput(raw.dueDate) ? raw.dueDate : calculateDueDateFromLmp(lmpDate);
+      const lmpDate = normalizeDateInput(raw.lmpDate, DEFAULT_PROFILE.lmpDate);
+      const dueDate = normalizeDateInput(raw.dueDate, calculateDueDateFromLmp(lmpDate));
       const babyName = String(raw.babyName || DEFAULT_PROFILE.babyName).trim();
       const profileSlug = slugify(raw.profileSlug || raw.slug || babyName || requestedProfileSlug());
       const babyStage = ["en_panza", "en_camino", "nacio"].includes(raw.babyStage)
@@ -3970,7 +3990,8 @@
         bloodTypeAttachment: normalizeProfileAttachment(raw.bloodTypeAttachment),
         familyPhoto: typeof raw.familyPhoto === "string" && raw.familyPhoto.startsWith("data:image/")
           ? raw.familyPhoto
-          : ""
+          : "",
+        updatedAt: String(raw.updatedAt || "").trim()
       };
     }
 
@@ -4178,7 +4199,7 @@
               addedAt: profile.bloodTypeAttachment.addedAt
             }
           : null,
-        updatedAt: new Date().toISOString()
+        updatedAt: profile.updatedAt || new Date().toISOString()
       };
     }
 
@@ -4453,7 +4474,8 @@
           birthDateTime,
           bloodType: document.getElementById("profileBloodType").value,
           bloodTypeAttachment,
-          familyPhoto
+          familyPhoto,
+          updatedAt: new Date().toISOString()
         });
         saveFamilyProfileToStorage();
         rebuildSchedule();
@@ -4506,10 +4528,77 @@
       setProfileStatus("Cargué los datos demo de Oli. Guardalos para entrar a la app.");
     }
 
+    function profileTimestamp(profile) {
+      const timestamp = Date.parse(profile && profile.updatedAt ? profile.updatedAt : "");
+      return Number.isFinite(timestamp) ? timestamp : null;
+    }
+
+    function profileComparable(profile) {
+      const normalized = normalizeProfile(profile || {});
+      const attachment = normalized.bloodTypeAttachment;
+      return {
+        email: normalized.email,
+        profileSlug: normalized.profileSlug,
+        parentOne: normalized.parentOne,
+        parentTwo: normalized.parentTwo,
+        parentOneEmail: normalized.parentOneEmail,
+        parentTwoEmail: normalized.parentTwoEmail,
+        babyName: normalized.babyName,
+        babyFullName: normalized.babyFullName,
+        lmpDate: normalized.lmpDate,
+        dueDate: normalized.dueDate,
+        babyStage: normalized.babyStage,
+        birthDateTime: normalized.birthDateTime,
+        bloodType: normalized.bloodType,
+        bloodTypeAttachment: attachment
+          ? {
+              filename: attachment.filename,
+              mimeType: attachment.mimeType,
+              size: attachment.size,
+              addedAt: attachment.addedAt
+            }
+          : null
+      };
+    }
+
+    function isProfileFormBeingEdited() {
+      const form = document.getElementById("familyProfileForm");
+      return Boolean(form && form.contains(document.activeElement));
+    }
+
+    function mergeRemoteFamilyProfile(remote) {
+      const local = familyProfile ? normalizeProfile(familyProfile) : null;
+      const currentAttachment = local && local.bloodTypeAttachment;
+      const remoteAttachment = remote.bloodTypeAttachment;
+      const mergedAttachment = remoteAttachment && currentAttachment && currentAttachment.dataUrl
+        && currentAttachment.filename === remoteAttachment.filename
+        ? { ...remoteAttachment, dataUrl: currentAttachment.dataUrl }
+        : remoteAttachment;
+      return normalizeProfile({
+        ...remote,
+        familyPhoto: remote.familyPhoto || (local && local.familyPhoto) || "",
+        bloodTypeAttachment: mergedAttachment
+      });
+    }
+
+    function shouldApplyRemoteFamilyProfile(remote) {
+      if (!remote) return false;
+      if (!familyProfile) return true;
+      const local = normalizeProfile(familyProfile);
+      const remoteTime = profileTimestamp(remote);
+      const localTime = profileTimestamp(local);
+      const changed = JSON.stringify(profileComparable(remote)) !== JSON.stringify(profileComparable(local));
+      if (!changed && (!remoteTime || remoteTime === localTime)) return false;
+      if (isProfileFormBeingEdited() && localTime && remoteTime && remoteTime <= localTime) return false;
+      if (remoteTime && (!localTime || remoteTime >= localTime)) return true;
+      return changed && !isProfileFormBeingEdited();
+    }
+
     function applyRemoteFamilyProfile(profile) {
-      if (!profile || familyProfile) return false;
-      const remote = normalizeProfile({ ...profile, profileSlug: profile.profileSlug || requestedProfileSlug() });
+      if (!profile) return false;
+      const remote = mergeRemoteFamilyProfile({ ...profile, profileSlug: profile.profileSlug || requestedProfileSlug() });
       if (remote.profileSlug !== requestedProfileSlug()) return false;
+      if (!shouldApplyRemoteFamilyProfile(remote)) return false;
       familyProfile = remote;
       saveFamilyProfileToStorage();
       rebuildSchedule();
