@@ -4748,10 +4748,22 @@
         const callbackName = `oliBackend_${Date.now()}_${Math.random().toString(16).slice(2)}`;
         const script = document.createElement("script");
         let settled = false;
-        const finish = (payload) => {
+        let timeoutId = null;
+        const scheduleCallbackCleanup = () => {
+          window.setTimeout(() => {
+            delete window[callbackName];
+          }, 45000);
+        };
+        const finish = (payload, keepLateCallback = false) => {
           if (settled) return;
           settled = true;
-          delete window[callbackName];
+          if (timeoutId) window.clearTimeout(timeoutId);
+          if (keepLateCallback) {
+            window[callbackName] = () => {};
+            scheduleCallbackCleanup();
+          } else {
+            delete window[callbackName];
+          }
           script.remove();
           backendProfileAware = Boolean(payload && payload.profileAware);
           if (backendProfileAware && payload && payload.familyProfile) {
@@ -4764,7 +4776,7 @@
         script.onerror = () => finish({});
         script.src = callbackUrl(callbackName);
         document.body.appendChild(script);
-        window.setTimeout(() => finish({}), 3200);
+        timeoutId = window.setTimeout(() => finish({}, true), 9000);
       });
     }
 
