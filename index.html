@@ -3650,6 +3650,7 @@
     const CONTROL_DIAPER_STORAGE_KEY = "nace-oli:control:diapers:v1";
     const CONTROL_FEEDING_STORAGE_KEY = "nace-oli:control:feedings:v1";
     const CONTROL_ACTIVE_FEEDING_STORAGE_KEY = "nace-oli:control:active-feeding:v1";
+    const CONTROL_SYNC_DIRTY_STORAGE_KEY = "nace-oli:control:sync-dirty:v1";
     const MEDICAL_RECORDS_STORAGE_KEY = "nace-oli:medical:records:v1";
     const DEVICE_STORAGE_KEY = "nace-oli:device-id:v1";
     const SUBSCRIPTION_STORAGE_KEY = "nace-oli:subscription:v1";
@@ -5065,7 +5066,7 @@
     async function sendOliEvent(kind, data = {}, statusElementId = null, successMessage = "Solicitud enviada al backend", options = {}) {
       if (IS_TEST_MODE || !CONTRACTION_BACKUP_URL || CONTRACTION_BACKUP_URL.includes("__")) {
         if (statusElementId) setInlineStatus(statusElementId, "Guardado en este dispositivo");
-        return;
+        return true;
       }
 
       if (!canUseBackendForCurrentProfile() && kind !== "family-profile") {
@@ -5075,7 +5076,7 @@
             "Guardado en este perfil. La sincronización remota se activa cuando el backend tenga perfiles."
           );
         }
-        return;
+        return true;
       }
 
       const payload = {
@@ -5099,8 +5100,10 @@
         if (options.keepalive !== false) request.keepalive = true;
         await fetch(CONTRACTION_BACKUP_URL, request);
         if (statusElementId) setInlineStatus(statusElementId, successMessage);
+        return true;
       } catch {
         if (statusElementId) setInlineStatus(statusElementId, "No se pudo sincronizar. Probá de nuevo en un ratito.", true);
+        return false;
       }
     }
 
@@ -5545,6 +5548,28 @@
       };
     }
 
+    function controlSyncDirtyKey() {
+      return profileScopedStorageKey(CONTROL_SYNC_DIRTY_STORAGE_KEY);
+    }
+
+    function markControlSyncDirty() {
+      localStorage.setItem(controlSyncDirtyKey(), new Date().toISOString());
+    }
+
+    function controlSyncDirtyToken() {
+      return localStorage.getItem(controlSyncDirtyKey()) || "";
+    }
+
+    function clearControlSyncDirty(token) {
+      if (!token || controlSyncDirtyToken() === token) {
+        localStorage.removeItem(controlSyncDirtyKey());
+      }
+    }
+
+    function hasControlSyncDirty() {
+      return Boolean(controlSyncDirtyToken());
+    }
+
     function itemBelongsToCurrentProfile(item) {
       const itemSlug = item && item.profileSlug ? slugify(item.profileSlug) : "";
       if (!itemSlug) return isLegacyOliProfile();
@@ -5586,20 +5611,32 @@
         if (JSON.stringify(merged) !== before) changed = true;
         feedingEntries = merged;
       }
+      const localActiveWasFinished = activeFeeding
+        ? feedingEntries.some((entry) => entry.id === activeFeeding.id && Number.isFinite(entry.end))
+        : false;
       if (state.activeFeeding && Number.isFinite(state.activeFeeding.timestamp)) {
         if (itemBelongsToCurrentProfile(state.activeFeeding)) {
-          if (!activeFeeding || activeFeeding.id !== state.activeFeeding.id) changed = true;
-          activeFeeding = {
+          const remoteActive = {
             id: state.activeFeeding.id || makeId(),
             timestamp: Number(state.activeFeeding.timestamp),
             deviceId: state.activeFeeding.deviceId || "",
             profileSlug: currentProfileSlug(),
             startedAt: state.activeFeeding.startedAt || new Date(Number(state.activeFeeding.timestamp)).toISOString()
           };
+          const remoteWasFinished = feedingEntries.some((entry) => entry.id === remoteActive.id && Number.isFinite(entry.end));
+          if (localActiveWasFinished) {
+            activeFeeding = null;
+            changed = true;
+          } else if (!remoteWasFinished && (!activeFeeding || remoteActive.timestamp >= activeFeeding.timestamp || remoteActive.id === activeFeeding.id)) {
+            if (!activeFeeding || activeFeeding.id !== remoteActive.id || activeFeeding.timestamp !== remoteActive.timestamp) changed = true;
+            activeFeeding = remoteActive;
+          }
         }
       } else if (activeFeeding && Object.prototype.hasOwnProperty.call(state, "activeFeeding")) {
-        activeFeeding = null;
-        changed = true;
+        if (localActiveWasFinished) {
+          activeFeeding = null;
+          changed = true;
+        }
       }
       saveDiaperEntries();
       saveFeedingEntries();
@@ -5607,21 +5644,57 @@
       return changed;
     }
 
-    async function syncControlState(statusElementId = null, message = "Sincronizado") {
-      saveDiaperEntries();
-      saveFeedingEntries();
-      saveActiveFeeding();
-      await sendOliEvent(
+    function scheduleControlSync(statusElementId = null, message = "Sincronizado", delay = 0) {
+      if (controlSyncRetryTimer) window.clearTimeout(controlSyncRetryTimer);
+      controlSyncRetryTimer = window.setTimeout(() => {
+        controlSyncRetryTimer = null;
+        flushControlSync(statusElementId, message);
+      }, delay);
+    }
+
+    async function flushControlSync(statusElementId = null, message = "Sincronizado") {
+      if (controlSyncInFlight) {
+        controlSyncQueued = true;
+        return;
+      }
+      if (!hasControlSyncDirty()) return;
+      controlSyncInFlight = true;
+      controlSyncQueued = false;
+      const dirtyToken = controlSyncDirtyToken();
+      const ok = await sendOliEvent(
         "control-state",
         { controlState: controlStateSnapshot() },
         statusElementId,
         message,
-        { sendingMessage: "Guardado acá · sincronizando..." }
+        { keepalive: false, sendingMessage: "Guardado acá · sincronizando..." }
       );
+      controlSyncInFlight = false;
+      if (ok) {
+        controlSyncAttempt = 0;
+        clearControlSyncDirty(dirtyToken);
+        if (!IS_TEST_MODE) window.setTimeout(() => pullControlState(), 1800);
+      } else {
+        controlSyncAttempt = Math.min(controlSyncAttempt + 1, 6);
+        scheduleControlSync(statusElementId, "Control sincronizado.", Math.min(45000, 2000 * controlSyncAttempt));
+        return;
+      }
+      if (controlSyncQueued || hasControlSyncDirty()) {
+        scheduleControlSync(statusElementId, message, 250);
+      }
+    }
+
+    async function syncControlState(statusElementId = null, message = "Sincronizado") {
+      saveDiaperEntries();
+      saveFeedingEntries();
+      saveActiveFeeding();
+      markControlSyncDirty();
+      if (statusElementId) setInlineStatus(statusElementId, "Guardado acá · sincronizando...");
+      scheduleControlSync(statusElementId, message);
     }
 
     function pullControlState() {
       if (!canUseBackendForCurrentProfile()) return Promise.resolve(null);
+      if (controlSyncInFlight || hasControlSyncDirty()) return Promise.resolve(null);
       return fetchBackendStatus().then((payload) => {
         if (payload && payload.controlState && applyControlState(payload.controlState)) {
           renderControl();
@@ -8508,6 +8581,10 @@
     let feedingEntries = loadFeedingEntries();
     let activeFeeding = loadActiveFeeding();
     let selectedFeedingId = null;
+    let controlSyncInFlight = false;
+    let controlSyncQueued = false;
+    let controlSyncRetryTimer = null;
+    let controlSyncAttempt = 0;
     let medicalRecords = loadMedicalRecords();
     let medicalFilter = "consulta";
     let medicalSearchTerm = "";
@@ -8783,6 +8860,7 @@
     }, 45000);
 
     setInterval(() => {
+      if (hasControlSyncDirty()) scheduleControlSync(null, "Control sincronizado.", 0);
       if (!document.getElementById("controlView").hidden) pullControlState();
       if (!document.getElementById("medicalView").hidden) pullMedicalState();
     }, 7000);
@@ -8796,6 +8874,7 @@
         renderToday();
         renderControl();
         renderMedical();
+        if (hasControlSyncDirty()) scheduleControlSync(null, "Control sincronizado.", 0);
         pullControlState();
         pullMedicalState();
       }
@@ -8836,6 +8915,7 @@
     updateBirthAssetButtons();
     setupAppointmentFloatDrag();
     applyFamilyProfile();
+    if (hasControlSyncDirty()) scheduleControlSync(null, "Control sincronizado.", 1200);
     renderAdminState();
     renderToday();
     renderContractions();
