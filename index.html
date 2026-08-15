@@ -7715,6 +7715,41 @@
       return { label: "Peso", unit: "kg" };
     }
 
+    function growthXAxisTicks(maxMonth) {
+      const firstTwoYears = [0, 1, 2, 3, 4, 5, 6, 9, 12, 15, 18, 21, 24];
+      if (maxMonth <= 24) return firstTwoYears.filter((month) => month <= maxMonth);
+      const ticks = [...firstTwoYears];
+      const lastTick = Math.ceil(maxMonth / 6) * 6;
+      for (let month = 30; month <= lastTick; month += 6) ticks.push(month);
+      return ticks.filter((month, index) => month <= maxMonth && ticks.indexOf(month) === index);
+    }
+
+    function niceGrowthStep(range) {
+      if (!Number.isFinite(range) || range <= 0) return 1;
+      const target = range / 5;
+      const exponent = Math.floor(Math.log10(target));
+      const base = Math.pow(10, exponent);
+      const fraction = target / base;
+      const niceFraction = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 2.5 ? 2.5 : fraction <= 5 ? 5 : 10;
+      return niceFraction * base;
+    }
+
+    function growthYAxisTicks(yMin, yMax) {
+      const step = niceGrowthStep(yMax - yMin);
+      const start = Math.ceil(yMin / step) * step;
+      const ticks = [];
+      for (let value = start; value <= yMax + step * 0.25; value += step) {
+        ticks.push(Number(value.toFixed(3)));
+      }
+      return ticks.length >= 2 ? ticks : [yMin, yMax].filter(Number.isFinite);
+    }
+
+    function formatGrowthAxisValue(value, metric) {
+      if (!Number.isFinite(value)) return "";
+      const decimals = metric === "weight" && Math.abs(value % 1) > 0.01 ? 1 : 0;
+      return value.toFixed(decimals).replace(".", ",");
+    }
+
     function renderGrowthChart(measurements) {
       const host = document.getElementById("growthChart");
       if (!host) return;
@@ -7739,9 +7774,11 @@
       const yMax = maxValue + padValue;
       const width = 860;
       const height = 330;
-      const pad = { left: 54, right: 24, top: 26, bottom: 42 };
+      const pad = { left: 72, right: 24, top: 32, bottom: 58 };
       const x = (month) => pad.left + (Math.min(maxMonth, Math.max(0, month)) / maxMonth) * (width - pad.left - pad.right);
       const y = (value) => pad.top + (1 - ((value - yMin) / (yMax - yMin))) * (height - pad.top - pad.bottom);
+      const xTicks = growthXAxisTicks(maxMonth);
+      const yTicks = growthYAxisTicks(yMin, yMax);
       const line = (index) => reference.map((row) => `${x(row[0]).toFixed(1)},${y(row[index]).toFixed(1)}`).join(" ");
       const pointSvg = points.map((point) => `
         <g>
@@ -7752,16 +7789,25 @@
       host.innerHTML = `
         <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(info.label)} según edad">
           <rect width="${width}" height="${height}" fill="#fff"></rect>
+          ${yTicks.map((tick) => {
+            const yy = y(tick);
+            return `
+              <line x1="${pad.left}" y1="${yy.toFixed(1)}" x2="${width - pad.right}" y2="${yy.toFixed(1)}" stroke="#f4f6f2"></line>
+              <text x="${pad.left - 9}" y="${(yy + 4).toFixed(1)}" text-anchor="end" fill="#66736b" font-size="11">${formatGrowthAxisValue(tick, metric)}</text>
+            `;
+          }).join("")}
           <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${height - pad.bottom}" stroke="#dfe5dc"></line>
           <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="#dfe5dc"></line>
-          ${[0, 6, 12, 18, 24].filter((month) => month <= maxMonth).map((month) => `
+          ${xTicks.map((month) => `
             <line x1="${x(month)}" y1="${pad.top}" x2="${x(month)}" y2="${height - pad.bottom}" stroke="#f0f2ed"></line>
-            <text x="${x(month)}" y="${height - 17}" text-anchor="middle" fill="#66736b" font-size="12">${month}m</text>
+            <text x="${x(month)}" y="${height - 31}" text-anchor="middle" fill="#66736b" font-size="11">${month}m</text>
           `).join("")}
           <polyline points="${line(1)}" fill="none" stroke="#b8c9bb" stroke-width="2"></polyline>
           <polyline points="${line(2)}" fill="none" stroke="#5c8666" stroke-width="2.8"></polyline>
           <polyline points="${line(3)}" fill="none" stroke="#b8c9bb" stroke-width="2"></polyline>
           ${pointSvg}
+          <text transform="translate(18 ${(pad.top + height - pad.bottom) / 2}) rotate(-90)" text-anchor="middle" fill="#66736b" font-size="12">${escapeHtml(info.label)} (${escapeHtml(info.unit)})</text>
+          <text x="${(pad.left + width - pad.right) / 2}" y="${height - 9}" text-anchor="middle" fill="#66736b" font-size="12">Edad (meses)</text>
           <text x="${pad.left}" y="18" fill="#17211b" font-size="13" font-weight="800">${escapeHtml(info.label)} · ${escapeHtml(info.unit)}</text>
           <text x="${width - pad.right}" y="18" text-anchor="end" fill="#66736b" font-size="12">P2 / P50 / P98 OMS</text>
         </svg>
