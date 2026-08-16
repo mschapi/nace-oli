@@ -1441,6 +1441,10 @@
       max-width: 100%;
       min-width: 0;
       overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
@@ -1499,6 +1503,32 @@
     .control-row-actions button[data-delete-feeding],
     .control-row-actions button[data-delete-growth] {
       color: #9c4032;
+    }
+
+    .control-inline-input,
+    .control-inline-select {
+      width: 100%;
+      min-width: 76px;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 760;
+    }
+
+    .control-inline-input {
+      padding: 0 8px;
+    }
+
+    .control-inline-select {
+      padding: 0 26px 0 8px;
+    }
+
+    .control-inline-duration {
+      min-width: 86px;
     }
 
     .control-range-panel {
@@ -2754,6 +2784,30 @@
         justify-content: flex-start;
       }
 
+      .control-table-wrap,
+      .contraction-table-wrap,
+      .table-wrap {
+        max-width: calc(100vw - 28px);
+        touch-action: pan-x pan-y;
+      }
+
+      .control-table {
+        min-width: 640px;
+      }
+
+      .growth-table,
+      .vaccination-table {
+        min-width: 760px;
+      }
+
+      .control-inline-input,
+      .control-inline-select,
+      #growthWeight,
+      #growthLength,
+      #growthHead {
+        font-size: 16px;
+      }
+
       .profile-two-cols {
         grid-template-columns: 1fr;
       }
@@ -3448,10 +3502,7 @@
             <h2 id="feedingTitle">Tomas del día</h2>
           </div>
           <form class="control-form" id="feedingForm">
-            <label class="edit-field">
-              <span>Hora de inicio</span>
-              <input id="feedingTime" type="datetime-local" step="60" required>
-            </label>
+            <input id="feedingTime" type="hidden">
             <div class="feeding-side-row" aria-label="Lado de la toma">
               <button class="feeding-side active" type="button" data-feeding-side="">Sin lado</button>
               <button class="feeding-side" type="button" data-feeding-side="left">Izq</button>
@@ -3465,12 +3516,6 @@
                 <button class="control-secondary" id="feedingPauseButton" type="button" hidden>Pausar</button>
               </div>
             </div>
-            <label class="edit-field">
-              <span>Duración editable</span>
-              <input id="feedingDuration" type="number" inputmode="numeric" min="0" step="1" placeholder="Minutos">
-            </label>
-            <button class="control-secondary" id="updateFeedingDuration" type="button" disabled>Actualizar duración</button>
-            <button class="control-secondary" id="cancelFeedingEdit" type="button" hidden>Cancelar edición</button>
           </form>
           <p class="announcement-status" id="feedingStatus" aria-live="polite">Guardado en este dispositivo.</p>
           <div class="control-summary" aria-label="Tomas de hoy">
@@ -3812,15 +3857,15 @@
             </label>
             <label class="edit-field">
               <span>Peso (kg)</span>
-              <input id="growthWeight" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3.25">
+              <input id="growthWeight" type="text" inputmode="decimal" autocomplete="off" placeholder="3,25">
             </label>
             <label class="edit-field">
               <span>Largo (cm)</span>
-              <input id="growthLength" type="number" min="0" step="0.1" inputmode="decimal" placeholder="50">
+              <input id="growthLength" type="text" inputmode="decimal" autocomplete="off" placeholder="50,0">
             </label>
             <label class="edit-field">
               <span>Perímetro cefálico (cm)</span>
-              <input id="growthHead" type="number" min="0" step="0.1" inputmode="decimal" placeholder="34">
+              <input id="growthHead" type="text" inputmode="decimal" autocomplete="off" placeholder="34,0">
             </label>
             <button class="control-submit" type="submit">Guardar medición</button>
             <button class="control-secondary" id="growthCancelEdit" type="button" hidden>Cancelar edición</button>
@@ -4377,6 +4422,13 @@
         .slice(0, 48) || "bebe";
     }
 
+    function canonicalProfileSlug(value) {
+      const cleanSlug = slugify(value);
+      return ["olivia-schapiro", "oliviaschapiro", "nace-oli", "naceoli"].includes(cleanSlug)
+        ? DEFAULT_PROFILE.profileSlug
+        : cleanSlug;
+    }
+
     function titleFromSlug(slug) {
       return String(slug || "")
         .split("-")
@@ -4419,11 +4471,11 @@
 
     function explicitProfileSlug() {
       const params = new URLSearchParams(window.location.search);
-      const paramSlug = slugify(params.get("perfil") || params.get("profile") || "");
+      const paramSlug = canonicalProfileSlug(params.get("perfil") || params.get("profile") || "");
       if (paramSlug !== "bebe") return paramSlug;
-      const routeSlug = pathProfileSlug();
+      const routeSlug = canonicalProfileSlug(pathProfileSlug());
       if (routeSlug && routeSlug !== "bebe") return routeSlug;
-      const cleanSubdomain = subdomainProfileSlug();
+      const cleanSubdomain = canonicalProfileSlug(subdomainProfileSlug());
       return cleanSubdomain !== "bebe" ? cleanSubdomain : "";
     }
 
@@ -4436,7 +4488,7 @@
     }
 
     function profileStorageKey(slug = requestedProfileSlug()) {
-      return `${FAMILY_PROFILE_STORAGE_KEY}:${slugify(slug)}`;
+      return `${FAMILY_PROFILE_STORAGE_KEY}:${canonicalProfileSlug(slug)}`;
     }
 
     function profileIndex() {
@@ -4449,7 +4501,7 @@
     }
 
     function saveProfileIndex(slug) {
-      const cleanSlug = slugify(slug);
+      const cleanSlug = canonicalProfileSlug(slug);
       const slugs = Array.from(new Set([...profileIndex(), cleanSlug]));
       localStorage.setItem(FAMILY_PROFILE_INDEX_STORAGE_KEY, JSON.stringify(slugs));
     }
@@ -4459,7 +4511,7 @@
     }
 
     function slugExistsLocally(slug) {
-      const cleanSlug = slugify(slug);
+      const cleanSlug = canonicalProfileSlug(slug);
       if (cleanSlug === currentProfileSlug()) return false;
       return Boolean(localStorage.getItem(profileStorageKey(cleanSlug))) || profileIndex().includes(cleanSlug);
     }
@@ -4492,7 +4544,7 @@
       const lmpDate = normalizeDateInput(raw.lmpDate, DEFAULT_PROFILE.lmpDate);
       const dueDate = normalizeDateInput(raw.dueDate, calculateDueDateFromLmp(lmpDate));
       const babyName = String(raw.babyName || DEFAULT_PROFILE.babyName).trim();
-      const profileSlug = slugify(raw.profileSlug || raw.slug || babyName || requestedProfileSlug());
+      const profileSlug = canonicalProfileSlug(raw.profileSlug || raw.slug || babyName || requestedProfileSlug());
       const babyStage = ["en_panza", "en_camino", "nacio"].includes(raw.babyStage)
         ? raw.babyStage
         : profileSlug === DEFAULT_PROFILE.profileSlug ? DEFAULT_PROFILE.babyStage : "en_panza";
@@ -5977,6 +6029,33 @@
       if (!Number.isFinite(timestamp)) return "—";
       const date = new Date(timestamp);
       return `${controlMinuteTime.format(date)}<span>${contractionDate.format(date).replace(".", "")}</span>`;
+    }
+
+    function timeInputValue(timestamp) {
+      return Number.isFinite(timestamp) ? controlMinuteTime.format(new Date(timestamp)) : "";
+    }
+
+    function timestampWithSameDayTime(originalTimestamp, value) {
+      const match = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
+      if (!match || !Number.isFinite(originalTimestamp)) return null;
+      const hours = Math.min(23, Math.max(0, Number(match[1])));
+      const minutes = Math.min(59, Math.max(0, Number(match[2])));
+      const day = controlDayKey(originalTimestamp);
+      return fromBuenosAiresInput(`${day}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`);
+    }
+
+    function parseDecimalInput(value) {
+      const text = String(value || "").replace(",", ".").trim();
+      if (!text) return null;
+      const number = Number(text);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function feedingMinutesInputValue(seconds) {
+      if (!Number.isFinite(seconds)) return "";
+      const minutes = Math.max(0, seconds / 60);
+      const text = Number.isInteger(minutes) ? String(minutes) : minutes.toFixed(1);
+      return text.replace(".", ",");
     }
 
     function updateLastHourCount() {
@@ -8625,14 +8704,20 @@
         pauseButton.hidden = false;
         pauseButton.textContent = paused ? "Seguir" : "Pausar";
         pauseButton.classList.toggle("is-live", paused);
-        timeInput.disabled = true;
+        if (timeInput) {
+          timeInput.value = toBuenosAiresInput(activeFeeding.timestamp).slice(0, 16);
+          timeInput.disabled = true;
+        }
       } else {
-        stage.textContent = selectedFeedingId ? "Editando toma" : "Lista para iniciar";
+        stage.textContent = "Lista para iniciar";
         timer.textContent = "00:00";
-        button.textContent = selectedFeedingId ? "Guardar cambios" : "Iniciar toma";
+        button.textContent = "Iniciar toma";
         pauseButton.hidden = true;
         pauseButton.classList.remove("is-live");
-        timeInput.disabled = false;
+        if (timeInput) {
+          timeInput.value = "";
+          timeInput.disabled = false;
+        }
       }
     }
 
@@ -8755,18 +8840,26 @@
 
       const entryRows = document.getElementById("feedingEntryRows");
       const recentFeedings = [...feedingEntries].sort((a, b) => b.timestamp - a.timestamp).slice(0, 12);
-      if (selectedFeedingId && !feedingEntries.some((entry) => entry.id === selectedFeedingId)) {
-        selectedFeedingId = null;
-      }
       entryRows.innerHTML = recentFeedings.map((entry) => `
         <tr>
-          <td class="time-cell">${timeCell(entry.timestamp)}</td>
-          <td class="time-cell">${timeCell(entry.end)}</td>
-          <td>${feedingSideLabel(entry.side)}</td>
-          <td>${formatFeedingSeconds(entry.durationSeconds)}</td>
+          <td>
+            <input class="control-inline-input" type="time" data-feeding-id="${escapeHtml(entry.id)}" data-feeding-field="start" value="${escapeHtml(timeInputValue(entry.timestamp))}">
+          </td>
+          <td>
+            <input class="control-inline-input" type="time" data-feeding-id="${escapeHtml(entry.id)}" data-feeding-field="end" value="${escapeHtml(timeInputValue(entry.end))}">
+          </td>
+          <td>
+            <select class="control-inline-select" data-feeding-id="${escapeHtml(entry.id)}" data-feeding-field="side">
+              <option value="" ${normalizeFeedingSide(entry.side) === "" ? "selected" : ""}>—</option>
+              <option value="left" ${normalizeFeedingSide(entry.side) === "left" ? "selected" : ""}>Izq</option>
+              <option value="right" ${normalizeFeedingSide(entry.side) === "right" ? "selected" : ""}>Der</option>
+            </select>
+          </td>
+          <td>
+            <input class="control-inline-input control-inline-duration" type="text" inputmode="decimal" data-feeding-id="${escapeHtml(entry.id)}" data-feeding-field="duration" value="${escapeHtml(feedingMinutesInputValue(entry.durationSeconds))}" aria-label="Duración en minutos">
+          </td>
           <td>
             <span class="control-row-actions">
-              <button type="button" data-edit-feeding="${escapeHtml(entry.id)}">Editar</button>
               <button type="button" data-delete-feeding="${escapeHtml(entry.id)}">Eliminar</button>
             </span>
           </td>
@@ -8774,9 +8867,6 @@
       `).join("");
       document.getElementById("feedingEntryEmpty").hidden = recentFeedings.length > 0;
       document.getElementById("feedingEntryWrap").hidden = recentFeedings.length === 0;
-      document.getElementById("updateFeedingDuration").disabled = !selectedFeedingId;
-      document.getElementById("updateFeedingDuration").textContent = selectedFeedingId ? "Guardar cambios" : "Actualizar duración";
-      document.getElementById("cancelFeedingEdit").hidden = !selectedFeedingId;
       renderControlRange();
     }
 
@@ -8805,26 +8895,56 @@
       await syncControlState("diaperStatus", "Pañal eliminado y sincronizado.");
     }
 
-    function selectFeedingForEdit(id) {
-      const entry = feedingEntries.find((item) => item.id === id);
-      if (!entry) return;
-      selectedFeedingId = entry.id;
-      document.getElementById("feedingTime").value = toBuenosAiresInput(entry.timestamp).slice(0, 16);
-      document.getElementById("feedingDuration").value = Number.isFinite(entry.durationSeconds)
-        ? String(Math.round(entry.durationSeconds / 60))
-        : "";
-      setFeedingSide(entry.side || "");
-      setInlineStatus("feedingStatus", "Editá hora, lado o duración y tocá Guardar cambios.");
-      renderControl();
+    async function handleFeedingInlineChange(event) {
+      const input = event.target.closest("[data-feeding-field]");
+      if (!input) return;
+      await updateFeedingEntryInline(input.dataset.feedingId, input.dataset.feedingField, input.value);
     }
 
-    function cancelFeedingEdit() {
-      selectedFeedingId = null;
-      document.getElementById("feedingDuration").value = "";
-      document.getElementById("feedingTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
-      setFeedingSide("");
+    async function updateFeedingEntryInline(id, field, value) {
+      const entry = feedingEntries.find((item) => item.id === id);
+      if (!entry) return;
+      const previous = JSON.stringify(entry);
+      if (field === "start") {
+        const timestamp = timestampWithSameDayTime(entry.timestamp, value);
+        if (!Number.isFinite(timestamp)) {
+          setInlineStatus("feedingStatus", "La hora de inicio tiene que ser válida.", true);
+          renderControl();
+          return;
+        }
+        const duration = Number.isFinite(entry.durationSeconds)
+          ? entry.durationSeconds
+          : Number.isFinite(entry.end) ? Math.max(0, Math.round((entry.end - entry.timestamp) / 1000)) : 0;
+        entry.timestamp = timestamp;
+        entry.end = timestamp + duration * 1000;
+        entry.durationSeconds = duration;
+      } else if (field === "end") {
+        let end = timestampWithSameDayTime(Number.isFinite(entry.end) ? entry.end : entry.timestamp, value);
+        if (!Number.isFinite(end)) {
+          setInlineStatus("feedingStatus", "La hora de fin tiene que ser válida.", true);
+          renderControl();
+          return;
+        }
+        if (end < entry.timestamp) end += 24 * 60 * 60 * 1000;
+        entry.end = end;
+        entry.durationSeconds = Math.max(0, Math.round((entry.end - entry.timestamp) / 1000));
+      } else if (field === "duration") {
+        const minutes = parseDecimalInput(value);
+        if (!Number.isFinite(minutes) || minutes < 0) {
+          setInlineStatus("feedingStatus", "La duración tiene que ser un número válido.", true);
+          renderControl();
+          return;
+        }
+        entry.durationSeconds = Math.round(minutes * 60);
+        entry.end = entry.timestamp + entry.durationSeconds * 1000;
+      } else if (field === "side") {
+        entry.side = normalizeFeedingSide(value);
+      }
+      if (JSON.stringify(entry) === previous) return;
+      entry.updatedAt = Date.now();
+      saveFeedingEntries();
       renderControl();
-      setInlineStatus("feedingStatus", "Edición cancelada.");
+      await syncControlState("feedingStatus", "Toma actualizada y sincronizada.");
     }
 
     async function deleteFeedingEntry(id) {
@@ -8834,7 +8954,6 @@
       if (!ok) return;
       feedingEntries = feedingEntries.filter((item) => item.id !== id);
       rememberDeletedControlId(id);
-      if (selectedFeedingId === id) selectedFeedingId = null;
       if (activeFeeding?.id === id) {
         activeFeeding = null;
         markActiveFeedingSyncDirty();
@@ -8903,13 +9022,8 @@
 
     async function handleFeedingSubmit(event) {
       event.preventDefault();
-      if (selectedFeedingId && !activeFeeding) {
-        await updateSelectedFeedingDuration();
-        return;
-      }
       if (!activeFeeding) {
-        const inputTimestamp = fromBuenosAiresInput(document.getElementById("feedingTime").value);
-        const timestamp = Number.isFinite(inputTimestamp) ? inputTimestamp : Date.now();
+        const timestamp = Date.now();
         activeFeeding = {
           id: makeId(),
           timestamp,
@@ -8922,9 +9036,7 @@
           updatedAt: Date.now()
         };
         markActiveFeedingSyncDirty();
-        selectedFeedingId = null;
         document.getElementById("feedingTime").value = toBuenosAiresInput(timestamp).slice(0, 16);
-        document.getElementById("feedingDuration").value = "";
         setInlineStatus("feedingStatus", "Toma iniciada. Podés finalizarla desde cualquier dispositivo sincronizado.");
         renderControl();
         await syncControlState("feedingStatus", "Toma iniciada y sincronizada.");
@@ -8948,10 +9060,8 @@
       } else {
         feedingEntries.push(finished);
       }
-      selectedFeedingId = finished.id;
       activeFeeding = null;
       markActiveFeedingSyncDirty();
-      document.getElementById("feedingDuration").value = String(Math.round(finished.durationSeconds / 60));
       document.getElementById("feedingTime").value = toBuenosAiresInput(finished.timestamp).slice(0, 16);
       setFeedingSide("");
       setInlineStatus("feedingStatus", `Toma finalizada: ${formatFeedingSeconds(finished.durationSeconds)}.`);
@@ -8975,31 +9085,6 @@
       saveActiveFeeding();
       renderControl();
       await syncControlState("feedingStatus", activeFeedingPaused() ? "Pausa sincronizada." : "Toma retomada y sincronizada.");
-    }
-
-    async function updateSelectedFeedingDuration() {
-      if (!selectedFeedingId) return;
-      const entry = feedingEntries.find((item) => item.id === selectedFeedingId);
-      if (!entry) return;
-      const timestamp = fromBuenosAiresInput(document.getElementById("feedingTime").value);
-      const minutes = Number(document.getElementById("feedingDuration").value);
-      if (!Number.isFinite(timestamp)) {
-        setInlineStatus("feedingStatus", "La hora tiene que ser válida.", true);
-        return;
-      }
-      if (!Number.isFinite(minutes) || minutes < 0) {
-        setInlineStatus("feedingStatus", "La duración tiene que ser un número válido.", true);
-        return;
-      }
-      entry.timestamp = timestamp;
-      entry.durationSeconds = Math.round(minutes * 60);
-      entry.end = entry.timestamp + entry.durationSeconds * 1000;
-      entry.side = selectedFeedingSide();
-      entry.updatedAt = Date.now();
-      saveFeedingEntries();
-      setInlineStatus("feedingStatus", "Toma actualizada.");
-      renderControl();
-      await syncControlState("feedingStatus", "Toma actualizada y sincronizada.");
     }
 
     function openContractionEditor(id) {
@@ -10118,7 +10203,6 @@
     let diaperEntries = loadDiaperEntries();
     let feedingEntries = loadFeedingEntries();
     let activeFeeding = loadActiveFeeding();
-    let selectedFeedingId = null;
     let editingDiaperId = null;
     let deletedControlIds = loadDeletedControlIds();
     let controlSyncInFlight = false;
@@ -10145,7 +10229,6 @@
       diaperEntries = loadDiaperEntries();
       feedingEntries = loadFeedingEntries();
       activeFeeding = loadActiveFeeding();
-      selectedFeedingId = null;
       editingDiaperId = null;
       deletedControlIds = loadDeletedControlIds();
       controlActiveSyncDirty = localStorage.getItem(profileScopedStorageKey(CONTROL_ACTIVE_DIRTY_STORAGE_KEY)) === "1";
@@ -10264,12 +10347,9 @@
     });
     document.getElementById("feedingForm").addEventListener("submit", handleFeedingSubmit);
     document.getElementById("feedingPauseButton").addEventListener("click", handleFeedingPauseToggle);
-    document.getElementById("updateFeedingDuration").addEventListener("click", updateSelectedFeedingDuration);
-    document.getElementById("cancelFeedingEdit").addEventListener("click", cancelFeedingEdit);
+    document.getElementById("feedingEntryRows").addEventListener("change", handleFeedingInlineChange);
     document.getElementById("feedingEntryRows").addEventListener("click", (event) => {
-      const editButton = event.target.closest("[data-edit-feeding]");
       const deleteButton = event.target.closest("[data-delete-feeding]");
-      if (editButton) selectFeedingForEdit(editButton.dataset.editFeeding);
       if (deleteButton) deleteFeedingEntry(deleteButton.dataset.deleteFeeding);
     });
     document.getElementById("controlMiniTabs").addEventListener("click", (event) => {
