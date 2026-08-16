@@ -3801,6 +3801,7 @@
             <button class="active" type="button" data-growth-metric="weight">Peso</button>
             <button type="button" data-growth-metric="length">Largo</button>
             <button type="button" data-growth-metric="head">Perímetro cefálico</button>
+            <button type="button" id="growthDownloadCsv">Descargar CSV</button>
           </div>
           <div class="growth-chart" id="growthChart" aria-live="polite"></div>
           <form class="growth-form" id="growthForm">
@@ -4078,6 +4079,7 @@
     const CONTROL_ACTIVE_FEEDING_STORAGE_KEY = "nace-oli:control:active-feeding:v1";
     const CONTROL_DELETED_STORAGE_KEY = "nace-oli:control:deleted:v1";
     const CONTROL_SYNC_DIRTY_STORAGE_KEY = "nace-oli:control:sync-dirty:v1";
+    const CONTROL_ACTIVE_DIRTY_STORAGE_KEY = "nace-oli:control:active-dirty:v1";
     const CONTROL_PANE_STORAGE_KEY = "nace-oli:control:pane:v1";
     const MEDICAL_RECORDS_STORAGE_KEY = "nace-oli:medical:records:v1";
     const MEDICAL_DELETED_STORAGE_KEY = "nace-oli:medical:deleted:v1";
@@ -6120,6 +6122,12 @@
       return value === "left" || value === "right" ? value : "";
     }
 
+    function controlNumber(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
     function feedingSideLabel(value) {
       const side = normalizeFeedingSide(value);
       if (side === "left") return "Izq";
@@ -6132,17 +6140,21 @@
         const parsed = JSON.parse(localStorage.getItem(profileScopedStorageKey(CONTROL_DIAPER_STORAGE_KEY)) || "[]");
         if (!Array.isArray(parsed)) return [];
         return parsed
-          .filter((item) => item && Number.isFinite(item.timestamp) && (item.pee || item.poop))
-          .map((item) => ({
-            id: item.id || makeId(),
-            timestamp: Number(item.timestamp),
-            pee: Boolean(item.pee),
-            poop: Boolean(item.poop),
-            photo: typeof item.photo === "string" && item.photo.startsWith("data:image/") ? item.photo : "",
-            deviceId: item.deviceId || "",
-            profileSlug: slugify(item.profileSlug || currentProfileSlug()),
-            updatedAt: Number.isFinite(Number(item.updatedAt)) ? Number(item.updatedAt) : Number(item.timestamp)
-          }))
+          .map((item) => {
+            const timestamp = controlNumber(item && item.timestamp);
+            if (!item || timestamp === null || (!item.pee && !item.poop)) return null;
+            return {
+              id: item.id || makeId(),
+              timestamp,
+              pee: Boolean(item.pee),
+              poop: Boolean(item.poop),
+              photo: typeof item.photo === "string" && item.photo.startsWith("data:image/") ? item.photo : "",
+              deviceId: item.deviceId || "",
+              profileSlug: slugify(item.profileSlug || currentProfileSlug()),
+              updatedAt: controlNumber(item.updatedAt) || timestamp
+            };
+          })
+          .filter(Boolean)
           .sort((a, b) => a.timestamp - b.timestamp);
       } catch {
         return [];
@@ -6154,23 +6166,30 @@
         const parsed = JSON.parse(localStorage.getItem(profileScopedStorageKey(CONTROL_FEEDING_STORAGE_KEY)) || "[]");
         if (!Array.isArray(parsed)) return [];
         return parsed
-          .filter((item) => item && Number.isFinite(item.timestamp))
-          .map((item) => ({
-            id: item.id || makeId(),
-            timestamp: Number(item.timestamp),
-            end: Number.isFinite(item.end) ? Number(item.end) : null,
-            durationSeconds: Number.isFinite(item.durationSeconds) && item.durationSeconds >= 0
-              ? Number(item.durationSeconds)
-              : Number.isFinite(item.durationMinutes) && item.durationMinutes > 0
-                ? Number(item.durationMinutes) * 60
-                : Number.isFinite(item.end)
-                  ? Math.max(0, Math.round((Number(item.end) - Number(item.timestamp)) / 1000))
-                  : null,
-            deviceId: item.deviceId || "",
-            profileSlug: slugify(item.profileSlug || currentProfileSlug()),
-            side: normalizeFeedingSide(item.side),
-            updatedAt: Number.isFinite(Number(item.updatedAt)) ? Number(item.updatedAt) : Number(item.end || item.timestamp)
-          }))
+          .map((item) => {
+            const timestamp = controlNumber(item && item.timestamp);
+            if (!item || timestamp === null) return null;
+            const end = controlNumber(item.end);
+            const durationSeconds = controlNumber(item.durationSeconds);
+            const durationMinutes = controlNumber(item.durationMinutes);
+            return {
+              id: item.id || makeId(),
+              timestamp,
+              end,
+              durationSeconds: durationSeconds !== null && durationSeconds >= 0
+                ? durationSeconds
+                : durationMinutes !== null && durationMinutes > 0
+                  ? durationMinutes * 60
+                  : end !== null
+                    ? Math.max(0, Math.round((end - timestamp) / 1000))
+                    : null,
+              deviceId: item.deviceId || "",
+              profileSlug: slugify(item.profileSlug || currentProfileSlug()),
+              side: normalizeFeedingSide(item.side),
+              updatedAt: controlNumber(item.updatedAt) || end || timestamp
+            };
+          })
+          .filter(Boolean)
           .sort((a, b) => a.timestamp - b.timestamp);
       } catch {
         return [];
@@ -6180,16 +6199,18 @@
     function loadActiveFeeding() {
       try {
         const item = JSON.parse(localStorage.getItem(profileScopedStorageKey(CONTROL_ACTIVE_FEEDING_STORAGE_KEY)) || "null");
-        if (!item || !Number.isFinite(item.timestamp)) return null;
+        const timestamp = controlNumber(item && item.timestamp);
+        if (!item || timestamp === null) return null;
         return {
           id: item.id || makeId(),
-          timestamp: Number(item.timestamp),
+          timestamp,
           deviceId: item.deviceId || "",
           profileSlug: slugify(item.profileSlug || currentProfileSlug()),
-          startedAt: item.startedAt || new Date(Number(item.timestamp)).toISOString(),
+          startedAt: item.startedAt || new Date(timestamp).toISOString(),
           side: normalizeFeedingSide(item.side),
-          pausedAt: Number.isFinite(item.pausedAt) ? Number(item.pausedAt) : null,
-          pausedSeconds: Number.isFinite(item.pausedSeconds) && item.pausedSeconds > 0 ? Number(item.pausedSeconds) : 0
+          pausedAt: controlNumber(item.pausedAt),
+          pausedSeconds: controlNumber(item.pausedSeconds) > 0 ? controlNumber(item.pausedSeconds) : 0,
+          updatedAt: controlNumber(item.updatedAt) || timestamp
         };
       } catch {
         return null;
@@ -6231,6 +6252,13 @@
       return Math.max(0, now - activeFeeding.timestamp - accumulatedPause - currentPause);
     }
 
+    function touchActiveFeeding() {
+      if (!activeFeeding) return;
+      activeFeeding.profileSlug = currentProfileSlug();
+      activeFeeding.deviceId = activeFeeding.deviceId || getDeviceId();
+      activeFeeding.updatedAt = Date.now();
+    }
+
     function saveDiaperEntries() {
       diaperEntries.sort((a, b) => a.timestamp - b.timestamp);
       localStorage.setItem(profileScopedStorageKey(CONTROL_DIAPER_STORAGE_KEY), JSON.stringify(diaperEntries));
@@ -6243,6 +6271,7 @@
 
     function saveActiveFeeding() {
       if (activeFeeding) {
+        activeFeeding.updatedAt = controlNumber(activeFeeding.updatedAt) || controlNumber(activeFeeding.timestamp) || Date.now();
         localStorage.setItem(profileScopedStorageKey(CONTROL_ACTIVE_FEEDING_STORAGE_KEY), JSON.stringify(activeFeeding));
       } else {
         localStorage.removeItem(profileScopedStorageKey(CONTROL_ACTIVE_FEEDING_STORAGE_KEY));
@@ -6250,6 +6279,7 @@
     }
 
     function controlStateSnapshot() {
+      const shouldSendActive = activeFeeding && hasActiveFeedingSyncDirty();
       return {
         profileSlug: currentProfileSlug(),
         updatedAt: new Date().toISOString(),
@@ -6264,7 +6294,11 @@
           profileSlug: currentProfileSlug()
         })),
         feedings: feedingEntries.map((entry) => ({ ...entry, profileSlug: currentProfileSlug() })),
-        activeFeeding: activeFeeding ? { ...activeFeeding, profileSlug: currentProfileSlug() } : null,
+        activeFeeding: shouldSendActive ? {
+          ...activeFeeding,
+          profileSlug: currentProfileSlug(),
+          updatedAt: controlNumber(activeFeeding.updatedAt) || controlNumber(activeFeeding.timestamp) || Date.now()
+        } : activeFeeding ? undefined : null,
         deletedIds: deletedControlIds.slice(-500)
       };
     }
@@ -6289,6 +6323,29 @@
 
     function hasControlSyncDirty() {
       return Boolean(controlSyncDirtyToken());
+    }
+
+    function controlActiveDirtyKey() {
+      return profileScopedStorageKey(CONTROL_ACTIVE_DIRTY_STORAGE_KEY);
+    }
+
+    function markActiveFeedingSyncDirty() {
+      controlActiveSyncDirty = true;
+      localStorage.setItem(controlActiveDirtyKey(), "1");
+    }
+
+    function clearActiveFeedingSyncDirty() {
+      controlActiveSyncDirty = false;
+      localStorage.removeItem(controlActiveDirtyKey());
+    }
+
+    function hasActiveFeedingSyncDirty() {
+      return controlActiveSyncDirty || localStorage.getItem(controlActiveDirtyKey()) === "1";
+    }
+
+    function markActiveFeedingChanged() {
+      touchActiveFeeding();
+      markActiveFeedingSyncDirty();
     }
 
     function itemBelongsToCurrentProfile(item) {
@@ -6327,7 +6384,13 @@
       if (Array.isArray(state.diapers)) {
         const before = JSON.stringify(diaperEntries);
         const remote = state.diapers.filter(itemBelongsToCurrentProfile).filter((item) => !controlItemDeleted(item));
-        const merged = mergeById(diaperEntries, remote).filter((item) => item && Number.isFinite(item.timestamp));
+        const merged = mergeById(diaperEntries, remote)
+          .filter((item) => item && controlNumber(item.timestamp) !== null)
+          .map((item) => ({
+            ...item,
+            timestamp: controlNumber(item.timestamp),
+            updatedAt: controlNumber(item.updatedAt) || controlNumber(item.timestamp)
+          }));
         if (JSON.stringify(merged) !== before) changed = true;
         diaperEntries = merged;
       }
@@ -6335,13 +6398,14 @@
         const before = JSON.stringify(feedingEntries);
         const remote = state.feedings.filter(itemBelongsToCurrentProfile).filter((item) => !controlItemDeleted(item));
         const merged = mergeById(feedingEntries, remote)
-          .filter((item) => item && Number.isFinite(item.timestamp))
+          .filter((item) => item && controlNumber(item.timestamp) !== null)
           .map((item) => ({
             ...item,
-            end: Number.isFinite(item.end) ? Number(item.end) : null,
-            durationSeconds: Number.isFinite(item.durationSeconds) ? Number(item.durationSeconds) : null,
+            timestamp: controlNumber(item.timestamp),
+            end: controlNumber(item.end),
+            durationSeconds: controlNumber(item.durationSeconds),
             side: normalizeFeedingSide(item.side),
-            updatedAt: Number.isFinite(Number(item.updatedAt)) ? Number(item.updatedAt) : Number(item.end || item.timestamp)
+            updatedAt: controlNumber(item.updatedAt) || controlNumber(item.end) || controlNumber(item.timestamp)
           }));
         if (JSON.stringify(merged) !== before) changed = true;
         feedingEntries = merged;
@@ -6349,25 +6413,33 @@
       const localActiveWasFinished = activeFeeding
         ? feedingEntries.some((entry) => entry.id === activeFeeding.id && Number.isFinite(entry.end))
         : false;
-      if (state.activeFeeding && Number.isFinite(state.activeFeeding.timestamp)) {
+      if (state.activeFeeding && controlNumber(state.activeFeeding.timestamp) !== null) {
         if (itemBelongsToCurrentProfile(state.activeFeeding)) {
+          const remoteTimestamp = controlNumber(state.activeFeeding.timestamp);
+          const remotePausedAt = controlNumber(state.activeFeeding.pausedAt);
           const remoteActive = {
             id: state.activeFeeding.id || makeId(),
-            timestamp: Number(state.activeFeeding.timestamp),
+            timestamp: remoteTimestamp,
             deviceId: state.activeFeeding.deviceId || "",
             profileSlug: currentProfileSlug(),
-            startedAt: state.activeFeeding.startedAt || new Date(Number(state.activeFeeding.timestamp)).toISOString(),
+            startedAt: state.activeFeeding.startedAt || new Date(remoteTimestamp).toISOString(),
             side: normalizeFeedingSide(state.activeFeeding.side),
-            pausedAt: Number.isFinite(state.activeFeeding.pausedAt) ? Number(state.activeFeeding.pausedAt) : null,
-            pausedSeconds: Number.isFinite(state.activeFeeding.pausedSeconds) && state.activeFeeding.pausedSeconds > 0 ? Number(state.activeFeeding.pausedSeconds) : 0
+            pausedAt: remotePausedAt,
+            pausedSeconds: controlNumber(state.activeFeeding.pausedSeconds) > 0 ? controlNumber(state.activeFeeding.pausedSeconds) : 0,
+            updatedAt: controlNumber(state.activeFeeding.updatedAt) || remotePausedAt || remoteTimestamp
           };
           const remoteWasFinished = feedingEntries.some((entry) => entry.id === remoteActive.id && Number.isFinite(entry.end));
           if (localActiveWasFinished || controlItemDeleted(remoteActive)) {
             activeFeeding = null;
             changed = true;
-          } else if (!remoteWasFinished && (!activeFeeding || remoteActive.timestamp >= activeFeeding.timestamp || remoteActive.id === activeFeeding.id)) {
-            if (!activeFeeding || JSON.stringify(activeFeeding) !== JSON.stringify(remoteActive)) changed = true;
-            activeFeeding = remoteActive;
+          } else if (!remoteWasFinished) {
+            const localActiveTime = controlNumber(activeFeeding && activeFeeding.updatedAt) || controlNumber(activeFeeding && activeFeeding.timestamp) || 0;
+            const remoteActiveTime = controlNumber(remoteActive.updatedAt) || controlNumber(remoteActive.timestamp) || 0;
+            const shouldUseRemoteActive = !activeFeeding || remoteActiveTime > localActiveTime;
+            if (shouldUseRemoteActive) {
+              if (!activeFeeding || JSON.stringify(activeFeeding) !== JSON.stringify(remoteActive)) changed = true;
+              activeFeeding = remoteActive;
+            }
           }
         }
       } else if (activeFeeding && Object.prototype.hasOwnProperty.call(state, "activeFeeding")) {
@@ -6410,7 +6482,8 @@
       if (ok) {
         controlSyncAttempt = 0;
         clearControlSyncDirty(dirtyToken);
-        if (!IS_TEST_MODE) window.setTimeout(() => pullControlState(), 1800);
+        if (!hasControlSyncDirty()) clearActiveFeedingSyncDirty();
+        if (!IS_TEST_MODE) window.setTimeout(() => pullControlState(), 3000);
       } else {
         controlSyncAttempt = Math.min(controlSyncAttempt + 1, 6);
         scheduleControlSync(statusElementId, "Control sincronizado.", Math.min(45000, 2000 * controlSyncAttempt));
@@ -6422,6 +6495,7 @@
     }
 
     async function syncControlState(statusElementId = null, message = "Sincronizado") {
+      controlLastLocalMutationAt = Date.now();
       saveDiaperEntries();
       saveFeedingEntries();
       saveActiveFeeding();
@@ -6432,12 +6506,17 @@
 
     function pullControlState() {
       if (!canUseBackendForCurrentProfile()) return Promise.resolve(null);
-      if (controlSyncInFlight || hasControlSyncDirty()) return Promise.resolve(null);
+      if (controlPullInFlight || controlSyncInFlight || hasControlSyncDirty()) return Promise.resolve(null);
+      const pullStartedAfterMutation = controlLastLocalMutationAt;
+      controlPullInFlight = true;
       return fetchBackendStatus().then((payload) => {
+        if (controlLastLocalMutationAt > pullStartedAfterMutation || controlSyncInFlight || hasControlSyncDirty()) return;
         if (payload && payload.controlState && applyControlState(payload.controlState)) {
           renderControl();
         }
-      }).catch(() => {});
+      }).catch(() => {}).finally(() => {
+        controlPullInFlight = false;
+      });
     }
 
     function escapeHtml(value) {
@@ -7848,6 +7927,86 @@
       document.getElementById("growthTableWrap").hidden = rows.length === 0;
     }
 
+    function csvValue(value) {
+      const text = String(value ?? "");
+      return /[;"\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    function formatGrowthCsvNumber(value, metric) {
+      if (!Number.isFinite(value)) return "";
+      return Number(value).toFixed(metric === "weight" ? 2 : 1);
+    }
+
+    function downloadTextFile(filename, text, type = "text/plain;charset=utf-8") {
+      const blob = new Blob([`\ufeff${text}`], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+
+    function downloadGrowthCsv() {
+      const metric = growthMetric;
+      const sex = currentProfile().babySex === "male" ? "male" : "female";
+      const reference = WHO_GROWTH_REFERENCE[sex][metric] || [];
+      const info = growthMetricLabel(metric);
+      const rows = [[
+        "tipo",
+        "perfil",
+        "sexo",
+        "metrica",
+        "unidad",
+        "edad_meses",
+        "fecha",
+        "valor_perfil",
+        "p2_oms",
+        "p50_oms",
+        "p98_oms",
+        "origen"
+      ]];
+      reference.forEach((row) => {
+        rows.push([
+          "OMS",
+          currentProfileSlug(),
+          sex === "male" ? "masculino" : "femenino",
+          info.label,
+          info.unit,
+          row[0],
+          "",
+          "",
+          formatGrowthCsvNumber(row[1], metric),
+          formatGrowthCsvNumber(row[2], metric),
+          formatGrowthCsvNumber(row[3], metric),
+          "WHO/CDC 0-24 meses"
+        ]);
+      });
+      growthMeasurements()
+        .filter((point) => Number.isFinite(point[metric]) && Number.isFinite(point.ageMonths))
+        .forEach((point) => {
+          rows.push([
+            "Perfil",
+            currentProfileSlug(),
+            sex === "male" ? "masculino" : "femenino",
+            info.label,
+            info.unit,
+            point.ageMonths.toFixed(2),
+            point.dateKey,
+            formatGrowthCsvNumber(point[metric], metric),
+            "",
+            "",
+            "",
+            point.source
+          ]);
+        });
+      const csv = rows.map((row) => row.map(csvValue).join(";")).join("\r\n");
+      downloadTextFile(`curvas-${currentProfileSlug()}-${metric}.csv`, csv, "text/csv;charset=utf-8");
+      setInlineStatus("growthStatus", "CSV descargado con curva OMS y mediciones del perfil.");
+    }
+
     async function saveGrowthMeasurement(event) {
       event.preventDefault();
       const dateValue = document.getElementById("growthDate").value;
@@ -8676,7 +8835,10 @@
       feedingEntries = feedingEntries.filter((item) => item.id !== id);
       rememberDeletedControlId(id);
       if (selectedFeedingId === id) selectedFeedingId = null;
-      if (activeFeeding?.id === id) activeFeeding = null;
+      if (activeFeeding?.id === id) {
+        activeFeeding = null;
+        markActiveFeedingSyncDirty();
+      }
       saveFeedingEntries();
       saveActiveFeeding();
       renderControl();
@@ -8756,8 +8918,10 @@
           startedAt: new Date(timestamp).toISOString(),
           side: selectedFeedingSide(),
           pausedAt: null,
-          pausedSeconds: 0
+          pausedSeconds: 0,
+          updatedAt: Date.now()
         };
+        markActiveFeedingSyncDirty();
         selectedFeedingId = null;
         document.getElementById("feedingTime").value = toBuenosAiresInput(timestamp).slice(0, 16);
         document.getElementById("feedingDuration").value = "";
@@ -8786,8 +8950,9 @@
       }
       selectedFeedingId = finished.id;
       activeFeeding = null;
+      markActiveFeedingSyncDirty();
       document.getElementById("feedingDuration").value = String(Math.round(finished.durationSeconds / 60));
-      document.getElementById("feedingTime").value = toBuenosAiresInput(Date.now()).slice(0, 16);
+      document.getElementById("feedingTime").value = toBuenosAiresInput(finished.timestamp).slice(0, 16);
       setFeedingSide("");
       setInlineStatus("feedingStatus", `Toma finalizada: ${formatFeedingSeconds(finished.durationSeconds)}.`);
       renderControl();
@@ -8806,6 +8971,7 @@
         activeFeeding.pausedSeconds = Math.max(0, Number(activeFeeding.pausedSeconds) || 0);
         setInlineStatus("feedingStatus", "Pausa marcada. Cuando vuelva a agarrar, tocá Seguir.");
       }
+      markActiveFeedingChanged();
       saveActiveFeeding();
       renderControl();
       await syncControlState("feedingStatus", activeFeedingPaused() ? "Pausa sincronizada." : "Toma retomada y sincronizada.");
@@ -9959,6 +10125,9 @@
     let controlSyncQueued = false;
     let controlSyncRetryTimer = null;
     let controlSyncAttempt = 0;
+    let controlPullInFlight = false;
+    let controlLastLocalMutationAt = 0;
+    let controlActiveSyncDirty = localStorage.getItem(profileScopedStorageKey(CONTROL_ACTIVE_DIRTY_STORAGE_KEY)) === "1";
     let medicalRecords = loadMedicalRecords();
     let deletedMedicalIds = loadDeletedMedicalIds();
     let medicalFilter = "consulta";
@@ -9979,6 +10148,7 @@
       selectedFeedingId = null;
       editingDiaperId = null;
       deletedControlIds = loadDeletedControlIds();
+      controlActiveSyncDirty = localStorage.getItem(profileScopedStorageKey(CONTROL_ACTIVE_DIRTY_STORAGE_KEY)) === "1";
       medicalRecords = loadMedicalRecords();
       deletedMedicalIds = loadDeletedMedicalIds();
       diaperDraft.pee = false;
@@ -10087,6 +10257,7 @@
       setFeedingSide(button.dataset.feedingSide);
       if (activeFeeding) {
         activeFeeding.side = selectedFeedingSide();
+        markActiveFeedingChanged();
         saveActiveFeeding();
         syncControlState("feedingStatus", "Lado de toma sincronizado.");
       }
@@ -10139,6 +10310,7 @@
       renderMedical();
     });
     document.getElementById("growthForm").addEventListener("submit", saveGrowthMeasurement);
+    document.getElementById("growthDownloadCsv").addEventListener("click", downloadGrowthCsv);
     document.getElementById("growthCancelEdit").addEventListener("click", () => {
       document.getElementById("growthForm").reset();
       document.getElementById("growthEditId").value = "";
@@ -10317,7 +10489,7 @@
       if (hasControlSyncDirty()) scheduleControlSync(null, "Control sincronizado.", 0);
       if (!document.getElementById("controlView").hidden) pullControlState();
       if (!document.getElementById("medicalView").hidden) pullMedicalState();
-    }, 7000);
+    }, 3000);
 
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
